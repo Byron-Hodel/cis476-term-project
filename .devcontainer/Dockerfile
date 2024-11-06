@@ -21,4 +21,4 @@ RUN cd backend-server && npm install
 COPY ./backend-server /workspaces/cis476-term-project/backend-server
 
 # Expose the application port
-EXPOSE 3000 5000
+EXPOSE 3000 4000
