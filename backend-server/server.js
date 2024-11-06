@@ -1,4 +1,5 @@
 const express = require('express');
+const cors = require('cors');
 const { sequelize } = require('./models');  // Database setup is managed in index.js
 
 async function startServer() {
@@ -10,8 +11,8 @@ async function startServer() {
     // Initialize Express app
     const app = express();
 
-    // Middleware setup (if needed)
-    // app.use(express.json());
+    // Enable CORS with default settings,
+    app.use(cors());
 
     // Define your routes here, e.g., app.use('/api', apiRoutes);
 
