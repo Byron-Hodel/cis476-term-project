@@ -15,6 +15,3 @@ COPY term-project-frontend/ term-project-frontend/
 
 # Expose the application port
 EXPOSE 3000
-
-# Start the application in development mode
-CMD ["npm", "run", "dev"]
