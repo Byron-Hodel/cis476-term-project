@@ -13,5 +13,12 @@ RUN cd term-project-frontend && npm install
 # Copy all project files from the term-project-frontend directory
 COPY term-project-frontend/ term-project-frontend/
 
+# Copy and install backend dependencies
+COPY ./backend-server/package.json ./backend-server/package-lock.json ./backend-server/
+RUN cd backend-server && npm install
+
+# Copy all backend project files
+COPY ./backend-server /workspaces/cis476-term-project/backend-server
+
 # Expose the application port
-EXPOSE 3000
+EXPOSE 3000 5000
