@@ -3,7 +3,6 @@ import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
-import Divider from '@mui/material/Divider';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
@@ -14,8 +13,8 @@ import Stack from '@mui/material/Stack';
 import MuiCard from '@mui/material/Card';
 import { styled } from '@mui/material/styles';
 import AppTheme from '../shared-theme/AppTheme';
-import { GoogleIcon, FacebookIcon, SitemarkIcon } from './CustomIcons';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
+import { MenuItem, Select } from '@mui/material';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -25,6 +24,13 @@ const Card = styled(MuiCard)(({ theme }) => ({
   padding: theme.spacing(4),
   gap: theme.spacing(2),
   margin: 'auto',
+  overflowY: 'auto', // Enable scrolling
+  // Hide the scrollbar
+  '::-webkit-scrollbar': {
+    display: 'none', // For Chrome, Safari, and Opera
+  },
+  msOverflowStyle: 'none', // For Internet Explorer and Edge
+  scrollbarWidth: 'none', // For Firefox
   boxShadow:
     'hsla(220, 30%, 5%, 0.05) 0px 5px 15px 0px, hsla(220, 25%, 10%, 0.05) 0px 15px 35px -5px',
   [theme.breakpoints.up('sm')]: {
@@ -40,6 +46,7 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
   minHeight: '100%',
   padding: theme.spacing(2),
+  overflowY: 'auto', // Ensure scrolling is enabled
   [theme.breakpoints.up('sm')]: {
     padding: theme.spacing(4),
   },
@@ -66,6 +73,22 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [nameError, setNameError] = React.useState(false);
   const [nameErrorMessage, setNameErrorMessage] = React.useState('');
+  const [securityAnswers, setSecurityAnswers] = React.useState<string[]>(['','','']);
+  // State variables for security question errors
+  const [securityErrors, setSecurityErrors] = React.useState([false, false, false]);
+  const [securityErrorMessages, setSecurityErrorMessages] = React.useState([
+    '',
+    '',
+    '',
+  ]);
+
+  const handleSecurityAnswerChange = (index: number, value: string) => {
+    setSecurityAnswers((prev) => {
+      const newAnswers = [...prev];
+      newAnswers[index] = value;
+      return newAnswers;
+    });
+  };
 
   const validateInputs = () => {
     const email = document.getElementById('email') as HTMLInputElement;
@@ -100,6 +123,21 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setNameError(false);
       setNameErrorMessage('');
     }
+
+    // Validate security question answers
+    const newSecurityErrors = [false, false, false];
+    const newSecurityErrorMessages = ['', '', ''];
+
+    securityAnswers.forEach((answer, index) => {
+      if (!answer) {
+        newSecurityErrors[index] = true;
+        newSecurityErrorMessages[index] = `Answer for security question ${index + 1} is required.`;
+        isValid = false;
+      }
+    });
+
+    setSecurityErrors(newSecurityErrors);
+    setSecurityErrorMessages(newSecurityErrorMessages);
 
     return isValid;
   };
@@ -181,10 +219,60 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                 color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="allowExtraEmails" color="primary" />}
-              label="I want to receive updates via email."
-            />
+  
+            {/* Security Question 1 */}
+            <FormControl fullWidth error={securityErrors[0]}>
+              <FormLabel htmlFor="security-question-1">Security Question 1</FormLabel>
+              <Select id="security-question-1" name="securityQuestion1" defaultValue="" required>
+                <MenuItem value="">Select a question</MenuItem>
+                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
+                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
+                <MenuItem value="What was your first school?">What was your first school?</MenuItem>
+              </Select>
+              <TextField
+                fullWidth
+                placeholder="Answer"
+                error={securityErrors[0]}
+                helperText={securityErrorMessages[0]}
+                onChange={(e) => handleSecurityAnswerChange(0, e.target.value)}
+              />
+            </FormControl>
+
+            {/* Security Question 2 */}
+            <FormControl fullWidth error={securityErrors[1]}>
+              <FormLabel htmlFor="security-question-2">Security Question 2</FormLabel>
+              <Select id="security-question-2" name="securityQuestion2" defaultValue="" required>
+                <MenuItem value="">Select a question</MenuItem>
+                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
+                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
+                <MenuItem value="What was your first school?">What was your first school?</MenuItem>
+              </Select>
+              <TextField
+                fullWidth
+                placeholder="Answer"
+                error={securityErrors[1]}
+                helperText={securityErrorMessages[1]}
+                onChange={(e) => handleSecurityAnswerChange(1, e.target.value)}
+              />
+            </FormControl>
+
+            {/* Security Question 3 */}
+            <FormControl fullWidth error={securityErrors[2]}>
+              <FormLabel htmlFor="security-question-3">Security Question 3</FormLabel>
+              <Select id="security-question-3" name="securityQuestion3" defaultValue="" required>
+                <MenuItem value="">Select a question</MenuItem>
+                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
+                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
+                <MenuItem value="What was your first school?">What was your first school?</MenuItem>
+              </Select>
+              <TextField
+                fullWidth
+                placeholder="Answer"
+                error={securityErrors[2]}
+                helperText={securityErrorMessages[2]}
+                onChange={(e) => handleSecurityAnswerChange(2, e.target.value)}
+              />
+            </FormControl>
             <Button
               type="submit"
               fullWidth
@@ -196,11 +284,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             <Typography sx={{ textAlign: 'center' }}>
               Already have an account?{' '}
               <span>
-                <Link
-                  href="/sign-in"
-                  variant="body2"
-                  sx={{ alignSelf: 'center' }}
-                >
+                <Link href="/sign-in" variant="body2" sx={{ alignSelf: 'center' }}>
                   Sign in
                 </Link>
               </span>
@@ -210,4 +294,5 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       </SignUpContainer>
     </AppTheme>
   );
+  
 }
