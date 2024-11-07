@@ -154,7 +154,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent default values from being sent
 
-    //Test trigger: display a success alert without any conditions
+    // Test trigger: display a success alert without any conditions
     // setAlertMessage('This is a test alert for successful sign-up.');
     // setAlertSeverity('success');
     // setAlertOpen(true);
