@@ -15,6 +15,11 @@ import { styled } from '@mui/material/styles';
 import ForgotPassword from './ForgotPassword';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
+import SessionManager from '../utils/SessionManager';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
+import { useRouter } from 'next/navigation';
+import axios from 'axios';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -64,6 +69,14 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
   const [passwordError, setPasswordError] = React.useState(false);
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [open, setOpen] = React.useState(false);
+  const [alertOpen, setAlertOpen] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState('');
+  const [alertSeverity, setAlertSeverity] = React.useState<'success' | 'error'>('success');
+  const router = useRouter();
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
+  }
 
   const handleClickOpen = () => {
     setOpen(true);
@@ -73,16 +86,65 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
     setOpen(false);
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log('HandleSubmit triggered');
     if (emailError || passwordError) {
+      console.log('Validation errors detected:');
+      console.log('Email error:', emailError);
+      console.log('Password error:', passwordError);
       event.preventDefault();
       return;
     }
+
+    if (!validateInputs()) {
+      console.log('Input validation failed');
+      return; 
+    }
+
     const data = new FormData(event.currentTarget);
-    console.log({
+    const formData = {
       email: data.get('email'),
       password: data.get('password'),
-    });
+    };
+
+    console.log('Form data before sending:', formData);
+
+    try {
+      const response = await axios.post('http://localhost:4000/api/users/signin', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      console.log('Response received from server:', response);
+
+      // Check the response format
+      const { message, token, user } = response.data;
+      console.log('Parsed response:', { message, token, user });
+
+      // Use SessionManager to store the token and user data
+      const session = SessionManager.getInstance();
+      session.setToken(token);
+      session.setUser(user);
+
+      console.log('Session data stored:', { token, user });
+      setAlertMessage(message);
+      setAlertSeverity('success');
+      setAlertOpen(true);
+
+      // Navigate to the dashboard or another protected route
+      // Change this to navigate to dashboard or whatever we want to next upon successful sign in
+      // setTimeout(() => {
+      //   console.log('Navigating to /sign-up');
+      //   router.push('/sign-up');
+      // }, 2000);
+    } catch (error) {
+        console.error('Error during sign-in:', error);
+        setAlertMessage('Sign-in failed. Please check your credentials and try again.');
+        setAlertSeverity('error');
+        setAlertOpen(true);
+    }
   };
 
   const validateInputs = () => {
@@ -157,15 +219,6 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <FormControl>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <FormLabel htmlFor="password">Password</FormLabel>
-                <Link
-                  component="button"
-                  type="button"
-                  onClick={handleClickOpen}
-                  variant="body2"
-                  sx={{ alignSelf: 'baseline' }}
-                >
-                  Forgot your password?
-                </Link>
               </Box>
               <TextField
                 error={passwordError}
@@ -175,17 +228,12 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
                 type="password"
                 id="password"
                 autoComplete="current-password"
-                autoFocus
                 required
                 fullWidth
                 variant="outlined"
                 color={passwordError ? 'error' : 'primary'}
               />
             </FormControl>
-            <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-            />
             <ForgotPassword open={open} handleClose={handleClose} />
             <Button
               type="submit"
@@ -198,11 +246,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <Typography sx={{ textAlign: 'center' }}>
               Don&apos;t have an account?{' '}
               <span>
-                <Link
-                  href="/sign-up"
-                  variant="body2"
-                  sx={{ alignSelf: 'center' }}
-                >
+                <Link href="/sign-up" variant="body2" sx={{ alignSelf: 'center' }}>
                   Sign up
                 </Link>
               </span>
@@ -210,6 +254,18 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
           </Box>
         </Card>
       </SignInContainer>
+      {/* Add Snackbar for alert display */}
+      <Snackbar
+        open={alertOpen}
+        autoHideDuration={6000}
+        onClose={handleAlertClose}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert onClose={handleAlertClose} severity={alertSeverity} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
     </AppTheme>
   );
+  
 }
