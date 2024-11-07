@@ -35,3 +35,12 @@ const authenticateToken = (req, res, next) => {
 };
 
 export default authenticateToken;
+
+// Example of how to use this
+/*
+import { signUp, signIn } from '../controllers/userController.mjs'; // example of functions from a controller
+import authenticateToken from '../middlewares/authenticateToken.mjs'; // Import middleware
+
+// Protected routes (example)
+router.get("/profile", authenticateToken, {function from a controller});
+*/
