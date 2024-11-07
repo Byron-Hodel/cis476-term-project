@@ -1,9 +1,7 @@
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
 import CssBaseline from '@mui/material/CssBaseline';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import FormLabel from '@mui/material/FormLabel';
 import FormControl from '@mui/material/FormControl';
 import Link from '@mui/material/Link';
@@ -15,6 +13,10 @@ import { styled } from '@mui/material/styles';
 import AppTheme from '../shared-theme/AppTheme';
 import ColorModeSelect from '../shared-theme/ColorModeSelect';
 import { MenuItem, Select } from '@mui/material';
+import axios from 'axios'; // used for sending info to the backend
+import CheckIcon from '@mui/icons-material/Check';
+import Alert from '@mui/material/Alert';
+import Snackbar from '@mui/material/Snackbar';
 
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
@@ -81,6 +83,13 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     '',
     '',
   ]);
+  const [alertOpen, setAlertOpen] = React.useState(false);
+  const [alertMessage, setAlertMessage] = React.useState('');
+  const [alertSeverity, setAlertSeverity] = React.useState<'success' | 'error'>('success');
+
+  const handleAlertClose = () => {
+    setAlertOpen(false);
+  };
 
   const handleSecurityAnswerChange = (index: number, value: string) => {
     setSecurityAnswers((prev) => {
@@ -142,157 +151,167 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     return isValid;
   };
 
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    if (nameError || emailError || passwordError) {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault(); // Prevent default values from being sent
+
+    //Test trigger: display a success alert without any conditions
+    // setAlertMessage('This is a test alert for successful sign-up.');
+    // setAlertSeverity('success');
+    // setAlertOpen(true);
+
+
+    if (!validateInputs()){
       event.preventDefault();
       return;
     }
+
     const data = new FormData(event.currentTarget);
-    console.log({
+
+    // Converting FormData to a JSON Object
+    const formData = {
       name: data.get('name'),
-      lastName: data.get('lastName'),
       email: data.get('email'),
       password: data.get('password'),
-    });
+      securityAnswers: securityAnswers,
+    };
+
+    try {
+      const response = await axios.post('backend api call goes here', formData, {
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+  
+      console.log('Sign-up successful:', response.data);
+      setAlertMessage('Sign-up successful.');
+      setAlertSeverity('success');
+      setAlertOpen(true);
+      // Optionally, navigate to another page or reset the form
+    } catch (error) {
+      console.error('Error submitting the form:', error);
+      setAlertMessage('Sign-up failed. Please try again.');
+      setAlertSeverity('error');
+      setAlertOpen(true);
+    }
   };
 
-  return (
-    <AppTheme {...props}>
-      <CssBaseline enableColorScheme />
-      <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
-      <SignUpContainer direction="column" justifyContent="space-between">
-        <Card variant="outlined">
-          <Typography
-            component="h1"
-            variant="h4"
-            sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
-          >
-            Sign up
-          </Typography>
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <FormControl>
-              <FormLabel htmlFor="name">Full name</FormLabel>
-              <TextField
-                autoComplete="name"
-                name="name"
-                required
-                fullWidth
-                id="name"
-                placeholder="Jon Snow"
-                error={nameError}
-                helperText={nameErrorMessage}
-                color={nameError ? 'error' : 'primary'}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="email">Email</FormLabel>
-              <TextField
-                required
-                fullWidth
-                id="email"
-                placeholder="your@email.com"
-                name="email"
-                autoComplete="email"
-                variant="outlined"
-                error={emailError}
-                helperText={emailErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-              />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="password">Password</FormLabel>
-              <TextField
-                required
-                fullWidth
-                name="password"
-                placeholder="••••••"
-                type="password"
-                id="password"
-                autoComplete="new-password"
-                variant="outlined"
-                error={passwordError}
-                helperText={passwordErrorMessage}
-                color={passwordError ? 'error' : 'primary'}
-              />
-            </FormControl>
-  
-            {/* Security Question 1 */}
-            <FormControl fullWidth error={securityErrors[0]}>
-              <FormLabel htmlFor="security-question-1">Security Question 1</FormLabel>
-              <Select id="security-question-1" name="securityQuestion1" defaultValue="" required>
-                <MenuItem value="">Select a question</MenuItem>
-                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
-                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
-                <MenuItem value="What was your first school?">What was your first school?</MenuItem>
-              </Select>
-              <TextField
-                fullWidth
-                placeholder="Answer"
-                error={securityErrors[0]}
-                helperText={securityErrorMessages[0]}
-                onChange={(e) => handleSecurityAnswerChange(0, e.target.value)}
-              />
-            </FormControl>
-
-            {/* Security Question 2 */}
-            <FormControl fullWidth error={securityErrors[1]}>
-              <FormLabel htmlFor="security-question-2">Security Question 2</FormLabel>
-              <Select id="security-question-2" name="securityQuestion2" defaultValue="" required>
-                <MenuItem value="">Select a question</MenuItem>
-                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
-                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
-                <MenuItem value="What was your first school?">What was your first school?</MenuItem>
-              </Select>
-              <TextField
-                fullWidth
-                placeholder="Answer"
-                error={securityErrors[1]}
-                helperText={securityErrorMessages[1]}
-                onChange={(e) => handleSecurityAnswerChange(1, e.target.value)}
-              />
-            </FormControl>
-
-            {/* Security Question 3 */}
-            <FormControl fullWidth error={securityErrors[2]}>
-              <FormLabel htmlFor="security-question-3">Security Question 3</FormLabel>
-              <Select id="security-question-3" name="securityQuestion3" defaultValue="" required>
-                <MenuItem value="">Select a question</MenuItem>
-                <MenuItem value="What is your mother's maiden name?">What is your mother's maiden name?</MenuItem>
-                <MenuItem value="What was the name of your first pet?">What was the name of your first pet?</MenuItem>
-                <MenuItem value="What was your first school?">What was your first school?</MenuItem>
-              </Select>
-              <TextField
-                fullWidth
-                placeholder="Answer"
-                error={securityErrors[2]}
-                helperText={securityErrorMessages[2]}
-                onChange={(e) => handleSecurityAnswerChange(2, e.target.value)}
-              />
-            </FormControl>
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
+   return (
+    <>
+      <AppTheme {...props}>
+        <CssBaseline enableColorScheme />
+        <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
+        <SignUpContainer direction="column" justifyContent="space-between">
+          <Card variant="outlined">
+            <Typography
+              component="h1"
+              variant="h4"
+              sx={{ width: '100%', fontSize: 'clamp(2rem, 10vw, 2.15rem)' }}
             >
               Sign up
-            </Button>
-            <Typography sx={{ textAlign: 'center' }}>
-              Already have an account?{' '}
-              <span>
-                <Link href="/sign-in" variant="body2" sx={{ alignSelf: 'center' }}>
-                  Sign in
-                </Link>
-              </span>
             </Typography>
-          </Box>
-        </Card>
-      </SignUpContainer>
-    </AppTheme>
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+            >
+              <FormControl>
+                <FormLabel htmlFor="name">Full name</FormLabel>
+                <TextField
+                  autoComplete="name"
+                  name="name"
+                  required
+                  fullWidth
+                  id="name"
+                  placeholder="Jon Snow"
+                  error={nameError}
+                  helperText={nameErrorMessage}
+                  color={nameError ? 'error' : 'primary'}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel htmlFor="email">Email</FormLabel>
+                <TextField
+                  required
+                  fullWidth
+                  id="email"
+                  placeholder="your@email.com"
+                  name="email"
+                  autoComplete="email"
+                  variant="outlined"
+                  error={emailError}
+                  helperText={emailErrorMessage}
+                  color={passwordError ? 'error' : 'primary'}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel htmlFor="password">Password</FormLabel>
+                <TextField
+                  required
+                  fullWidth
+                  name="password"
+                  placeholder="••••••"
+                  type="password"
+                  id="password"
+                  autoComplete="new-password"
+                  variant="outlined"
+                  error={passwordError}
+                  helperText={passwordErrorMessage}
+                  color={passwordError ? 'error' : 'primary'}
+                />
+              </FormControl>
+              {/* Security questions */}
+              {[...Array(3)].map((_, i) => (
+                <FormControl key={i} fullWidth error={securityErrors[i]}>
+                  <FormLabel htmlFor={`security-question-${i + 1}`}>
+                    Security Question {i + 1}
+                  </FormLabel>
+                  <Select
+                    id={`security-question-${i + 1}`}
+                    name={`securityQuestion${i + 1}`}
+                    defaultValue=""
+                    required
+                  >
+                    <MenuItem value="">Select a question</MenuItem>
+                    <MenuItem value="What is your mother's maiden name?">
+                      What is your mother's maiden name?
+                    </MenuItem>
+                    <MenuItem value="What was the name of your first pet?">
+                      What was the name of your first pet?
+                    </MenuItem>
+                    <MenuItem value="What was your first school?">
+                      What was your first school?
+                    </MenuItem>
+                  </Select>
+                  <TextField
+                    fullWidth
+                    placeholder="Answer"
+                    error={securityErrors[i]}
+                    helperText={securityErrorMessages[i]}
+                    onChange={(e) => handleSecurityAnswerChange(i, e.target.value)}
+                  />
+                </FormControl>
+              ))}
+              <Button type="submit" fullWidth variant="contained">
+                Sign up
+              </Button>
+              <Typography sx={{ textAlign: 'center' }}>
+                Already have an account?{' '}
+                <span>
+                  <Link href="/sign-in" variant="body2" sx={{ alignSelf: 'center' }}>
+                    Sign in
+                  </Link>
+                </span>
+              </Typography>
+            </Box>
+          </Card>
+        </SignUpContainer>
+      </AppTheme>
+      <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
+        <Alert onClose={handleAlertClose} severity={alertSeverity} sx={{ width: '100%' }}>
+          {alertMessage}
+        </Alert>
+      </Snackbar>
+    </>
   );
   
 }
