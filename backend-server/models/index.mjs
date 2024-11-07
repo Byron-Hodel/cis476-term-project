@@ -47,5 +47,6 @@ Object.keys(db).forEach(modelName => {
 db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
-// Export the db object as default for ES module compatibility
+// Export all models
+export const { User } = db; // Ensure User is part of the named exports
 export default db;

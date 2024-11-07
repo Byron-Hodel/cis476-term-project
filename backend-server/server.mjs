@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import db from './models/index.mjs';  // Import the default export
+import userRoutes from './routes/userRoutes.mjs'
 
 const { sequelize } = db;  // Destructure sequelize from the imported db object
 
@@ -18,10 +19,12 @@ async function startServer() {
     // Initialize Express app
     const app = express();
 
-    // Enable CORS with default settings
-    app.use(cors());
-
-    // Define your routes here, e.g., app.use('/api', apiRoutes);
+     // Middleware
+     app.use(cors());
+     app.use(express.json()); // Parse JSON requests
+ 
+     // Use user routes
+     app.use('/api/users', userRoutes);
 
     // Start server
     app.listen(4000, () => console.log("Server is running on port 4000"));
