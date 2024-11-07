@@ -162,7 +162,6 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     // setAlertSeverity('success');
     // setAlertOpen(true);
 
-
     if (!validateInputs()){
       event.preventDefault();
       return;
