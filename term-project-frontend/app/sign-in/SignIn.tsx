@@ -135,10 +135,10 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
 
       // Navigate to the dashboard or another protected route
       // Change this to navigate to dashboard or whatever we want to next upon successful sign in
-      // setTimeout(() => {
-      //   console.log('Navigating to /sign-up');
-      //   router.push('/sign-up');
-      // }, 2000);
+      setTimeout(() => {
+        console.log('Navigating to dashboard');
+        router.push('/dashboard');
+      }, 2000);
     } catch (error) {
         console.error('Error during sign-in:', error);
         setAlertMessage('Sign-in failed. Please check your credentials and try again.');

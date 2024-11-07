@@ -36,7 +36,7 @@ const authenticateToken = (req, res, next) => {
 
 export default authenticateToken;
 
-// Example of how to use this
+// Example of how to use this, put the authenticate in the route file itself calling the controller you want too handle the api call, like with signup and sign in
 /*
 import { signUp, signIn } from '../controllers/userController.mjs'; // example of functions from a controller
 import authenticateToken from '../middlewares/authenticateToken.mjs'; // Import middleware
