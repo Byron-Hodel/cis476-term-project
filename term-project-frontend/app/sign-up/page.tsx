@@ -1,5 +1,5 @@
 'use client';
-import SignUp from './SignUp'; // Adjust the path based on your project structure
+import SignUp from './SignUp'; // Ensure this path is correct
 
 export default function Page() {
   return <SignUp />;

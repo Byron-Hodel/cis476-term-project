@@ -1,3 +1,5 @@
+'use client';
+import { useRouter } from 'next/navigation';
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -86,6 +88,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [alertOpen, setAlertOpen] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState('');
   const [alertSeverity, setAlertSeverity] = React.useState<'success' | 'error'>('success');
+  const router = useRouter();
 
   const handleAlertClose = () => {
     setAlertOpen(false);
@@ -172,11 +175,17 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       name: data.get('name'),
       email: data.get('email'),
       password: data.get('password'),
-      securityAnswers: securityAnswers,
+      securityQuestion1: data.get('securityQuestion1'),
+      securityAnswer1: securityAnswers[0],
+      securityQuestion2: data.get('securityQuestion2'),
+      securityAnswer2: securityAnswers[1],
+      securityQuestion3: data.get('securityQuestion3'),
+      securityAnswer3: securityAnswers[2],
     };
 
     try {
-      const response = await axios.post('backend api call goes here', formData, {
+      console.log('Form data before sending: ', formData);
+      const response = await axios.post('http://localhost:4000/api/users/signup', formData, {
         headers: {
           'Content-Type': 'application/json',
         },
@@ -187,6 +196,9 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setAlertSeverity('success');
       setAlertOpen(true);
       // Optionally, navigate to another page or reset the form
+      setTimeout(() => {
+        router.push('/sign-in');
+      }, 2000);
     } catch (error) {
       console.error('Error submitting the form:', error);
       setAlertMessage('Sign-up failed. Please try again.');
