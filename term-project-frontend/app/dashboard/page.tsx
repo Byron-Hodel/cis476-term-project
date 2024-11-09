@@ -1,5 +1,6 @@
+// page.tsx
 'use client';
-import Dashboard from './Dashboard'; // Adjust the path if necessary
+import Dashboard from './Dashboard';
 
 export default function Page() {
   return <Dashboard />;
