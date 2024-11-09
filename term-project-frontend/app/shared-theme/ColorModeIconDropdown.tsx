@@ -30,8 +30,10 @@ export default function ColorModeIconDropdown(props: IconButtonOwnProps) {
           display: 'inline-flex',
           width: '2.25rem',
           height: '2.25rem',
+          // @ts-ignore
           borderRadius: (theme.vars || theme).shape.borderRadius,
           border: '1px solid',
+          // @ts-ignore
           borderColor: (theme.vars || theme).palette.divider,
         })}
       />
