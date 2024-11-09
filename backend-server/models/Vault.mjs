@@ -17,7 +17,7 @@ export default (sequelize) => {
       onDelete: 'CASCADE',
     },
     type: {
-      type: DataTypes.ENUM('Login', 'Credit Card', 'Identity', 'Secure Notes'),
+      type: DataTypes.ENUM('Login', 'Credit Card', 'Identity', 'Secure Notes', 'Passport', 'License'),
       allowNull: false,
     },
     data: {

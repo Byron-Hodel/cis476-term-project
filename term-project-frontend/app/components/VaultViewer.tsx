@@ -19,7 +19,7 @@ const VaultViewer: React.FC = () => {
     }, []);
 
     return (
-        <Paper style={{ padding: '20px' }}>
+        <Paper style={{ padding: '20px', maxHeight: '600px', overflowY: 'auto' }}>
             <Typography variant="h6">Vault</Typography>
             {loading ? (
                 <Box display="flex" justifyContent="center" mt={2}>
@@ -41,6 +41,14 @@ const VaultViewer: React.FC = () => {
                                             Expiry: {entry.data.expirationDate}
                                             <br />
                                             CVV: ***
+                                        </>
+                                    ) : entry.type === 'Login' && entry.data ? (
+                                        <>
+                                            Site/Application: {entry.data.siteName || 'N/A'}
+                                            <br />
+                                            Username: {entry.data.username}
+                                            <br />
+                                            Password: ******
                                         </>
                                     ) : entry.type === 'Passport' && entry.data ? (
                                         <>
