@@ -48,5 +48,5 @@ db.sequelize = sequelize;
 db.Sequelize = Sequelize;
 
 // Export all models
-export const { User } = db; // Ensure User is part of the named exports
+export const { User, Vault } = db; // Ensure User is part of the named exports
 export default db;

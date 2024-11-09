@@ -4,10 +4,15 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const authenticateToken = (req, res, next) => {
+    console.log('Starting authentication middleware...');
+
     try {
         // Get the token from the Authorization header
         const authHeader = req.headers['authorization'];
+        console.log('Authorization header:', authHeader);
+
         const token = authHeader && authHeader.split(' ')[1]; // extract the token part after "Bearer"
+        console.log('Extracted token:', token);
 
         if (!token) {
             console.log('No token provided');
@@ -16,8 +21,8 @@ const authenticateToken = (req, res, next) => {
 
         // Verify the token using the secret key
         jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-            if(err) {
-                console.log('Token verifcation failed: ', err.message);
+            if (err) {
+                console.log('Token verification failed:', err.message);
                 return res.status(403).json({ message: 'Access denied. Invalid token.' });
             }
 
@@ -26,11 +31,12 @@ const authenticateToken = (req, res, next) => {
             console.log('Token verified successfully:', user);
 
             // Move to the next middleware or route handler
+            console.log('Authentication successful, proceeding to next handler...');
             next();
         });
     } catch (error) {
-        console.err('Error in authentication middleware:', error);
-        res.status(500).json({ message: 'Internal server error during authentication'});
+        console.error('Error in authentication middleware:', error);
+        res.status(500).json({ message: 'Internal server error during authentication' });
     }
 };
 
