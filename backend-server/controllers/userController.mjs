@@ -90,3 +90,87 @@ export const signIn = async (req, res) => {
     res.status(500).json({ message: 'Backend server error'});
   }
 };
+
+// Function to retrieve security questions by email
+export const getSecurityQuestions = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ message: 'Email is required' });
+  }
+
+  try {
+    // Find the user by email, only selecting the security questions
+    const user = await User.findOne({
+      where: { email },
+      attributes: ['securityQuestion1', 'securityQuestion2', 'securityQuestion3'],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Gather the security questions in an array
+    const questions = [
+      { question: user.securityQuestion1 },
+      { question: user.securityQuestion2 },
+      { question: user.securityQuestion3 },
+    ];
+
+    // Fisher-Yates shuffle algorithm for better randomization
+    for (let i = questions.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [questions[i], questions[j]] = [questions[j], questions[i]];
+    }
+
+    // Send only the randomized questions
+    res.status(200).json({ questions });
+  } catch (error) {
+    console.error('Error fetching security questions:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
+
+export const verifySecurityAnswers = async (req, res) => {
+  const { email, answers } = req.body;
+
+  if (!email || !Array.isArray(answers) || answers.length !== 3) {
+    return res.status(400).json({ message: 'Email and exactly 3 answers are required' });
+  }
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({
+      where: { email },
+      attributes: ['securityQuestion1', 'securityAnswer1', 'securityQuestion2', 'securityAnswer2', 'securityQuestion3', 'securityAnswer3'],
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Create a mapping of stored questions and answers
+    const storedAnswers = [
+      { question: user.securityQuestion1, answer: user.securityAnswer1 },
+      { question: user.securityQuestion2, answer: user.securityAnswer2 },
+      { question: user.securityQuestion3, answer: user.securityAnswer3 },
+    ];
+
+    // Validate each submitted answer by direct comparison
+    const isAllCorrect = answers.every((submittedAnswer) => {
+      const matchedStoredAnswer = storedAnswers.find(
+        (stored) => stored.question === submittedAnswer.question
+      );
+      return matchedStoredAnswer && matchedStoredAnswer.answer === submittedAnswer.answer;
+    });
+
+    if (isAllCorrect) {
+      return res.status(200).json({ message: 'All answers verified successfully' });
+    } else {
+      return res.status(401).json({ message: 'Security answers do not match' });
+    }
+  } catch (error) {
+    console.error('Error verifying security answers:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};

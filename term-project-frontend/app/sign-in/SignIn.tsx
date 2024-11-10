@@ -219,6 +219,15 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
             <FormControl>
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <FormLabel htmlFor="password">Password</FormLabel>
+                {/* Add a 'Forgot Password?' link */}
+                <Link
+                  component="button"
+                  variant="body2"
+                  onClick={handleClickOpen}
+                  sx={{ textDecoration: 'underline', cursor: 'pointer' }}
+                >
+                  Forgot Password?
+                </Link>
               </Box>
               <TextField
                 error={passwordError}
@@ -235,12 +244,7 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
               />
             </FormControl>
             <ForgotPassword open={open} handleClose={handleClose} />
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              onClick={validateInputs}
-            >
+            <Button type="submit" fullWidth variant="contained" onClick={validateInputs}>
               Sign in
             </Button>
             <Typography sx={{ textAlign: 'center' }}>
@@ -267,5 +271,4 @@ export default function SignIn(props: { disableCustomTheme?: boolean }) {
       </Snackbar>
     </AppTheme>
   );
-  
 }
