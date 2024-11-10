@@ -174,3 +174,32 @@ export const verifySecurityAnswers = async (req, res) => {
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
+
+// Function to change a users password
+export const changePassword = async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  if (!email || !newPassword) {
+    return res.status(400).json({ message: 'Email and new password are required' });
+  }
+
+  try {
+    // Find the user by email
+    const user = await User.findOne({ where: { email }, attributes: ['userId'] });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Hash the new password before saving
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password
+    await User.update({ password: hashedPassword }, { where: { email } });
+
+    return res.status(200).json({ message: 'Password changed successfully' });
+  } catch (error) {
+    console.error('Error changing password:', error);
+    res.status(500).json({ message: 'Internal Server Error' });
+  }
+};
