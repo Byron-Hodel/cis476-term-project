@@ -9,6 +9,8 @@ import OutlinedInput from '@mui/material/OutlinedInput';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
 import { ConcreteQuestionHandler } from './handlers/ConcreteQuestionHandler';
+import { useRouter } from 'next/navigation';
+import SessionManager from '../utils/SessionManager';
 
 interface ForgotPasswordProps {
   open: boolean;
@@ -24,6 +26,7 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
   const [success, setSuccess] = React.useState<string | null>(null);
   const [newPassword, setNewPassword] = React.useState<string>('');
   const [showPasswordChange, setShowPasswordChange] = React.useState(false);
+  const router = useRouter();
 
   // Function to handle fetching security questions by email
   const handleEmailSubmit = async () => {
@@ -108,7 +111,7 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
     }
   };
 
-  // Function to handle changing the password
+  // Function to handle changing the password and auto-signing in
   const handlePasswordChange = async () => {
     if (!newPassword) {
       setError('Please enter a new password.');
@@ -131,10 +134,34 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
       const data = await response.json();
       setSuccess(data.message);
 
-      // Close the dialog after successful password change
-      setTimeout(() => {
-        handleClose();
-      }, 2000);
+      // Sign the user in after password change
+      try {
+        const signInResponse = await fetch('http://localhost:4000/api/users/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password: newPassword }),
+        });
+
+        if (!signInResponse.ok) {
+          throw new Error('Sign-in failed after password change');
+        }
+
+        const signInData = await signInResponse.json();
+        const { token, user } = signInData;
+
+        // Store the token and user data in SessionManager
+        const session = SessionManager.getInstance();
+        session.setToken(token);
+        session.setUser(user);
+
+        // Navigate to the dashboard after a short delay
+        setSuccess('Password changed successfully. Signing in...');
+        setTimeout(() => {
+          router.push('/dashboard');
+        }, 2000);
+      } catch (err) {
+        setError('Sign-in failed. Please try logging in manually.');
+      }
     } catch (err) {
       setError('Failed to change password. Please try again.');
     } finally {
