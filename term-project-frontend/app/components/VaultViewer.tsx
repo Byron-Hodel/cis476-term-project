@@ -16,15 +16,18 @@ import {
     InputLabel,
 } from '@mui/material';
 import { useMediator } from './MediatorContext';
+import copy from 'copy-to-clipboard';
 
 const VaultViewer: React.FC = () => {
+    // global time for clipboard timeout
+    const CLIPBOARD_TIMEOUT = 5 * 60 * 1000; // 5 minutes to time out
+
     const { vaultData, fetchVaultData, addPasswordToVault } = useMediator();
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [entryType, setEntryType] = useState('Password');
     const [entryData, setEntryData] = useState<any>({});
 
-    // Fetch vault data when component mounts
     useEffect(() => {
         const loadData = async () => {
             console.log('Fetching vault data...');
@@ -47,8 +50,28 @@ const VaultViewer: React.FC = () => {
     };
 
     const handleAddEntry = () => {
-        //addPasswordToVault(...);
+        // Add entry to vault
         handleCloseDialog();
+    };
+
+    const handleCopyToClipboardWithTimeout = (text: string, label: string) => {
+        copy(text); // Use `copy-to-clipboard` to copy the initial value
+        alert(`${label} copied to clipboard!`);
+    
+        setTimeout(() => {
+            if (navigator.clipboard) {
+                navigator.clipboard
+                    .writeText('') // Use the Clipboard API to clear the clipboard
+                    .then(() => {
+                        console.log(`${label} cleared from clipboard after timeout.`);
+                    })
+                    .catch((err) => {
+                        console.error('Failed to clear clipboard:', err);
+                    });
+            } else {
+                console.warn('Clipboard API not supported.');
+            }
+        }, CLIPBOARD_TIMEOUT);
     };
 
     const renderEntryFields = () => {
@@ -137,6 +160,7 @@ const VaultViewer: React.FC = () => {
     };
 
     return (
+        
         <Paper style={{ padding: '20px', maxHeight: '600px', overflowY: 'auto' }}>
             <Typography variant="h6">Vault</Typography>
             {loading ? (
@@ -153,38 +177,110 @@ const VaultViewer: React.FC = () => {
                     </Box>
                     {vaultData.length > 0 ? (
                         vaultData.map((entry, index) => (
-                            <Box key={index} mb={2}>
+                            
+                            <Box key={index} mb={2} p={2} border={1} borderRadius="5px">
+                                {/* Use name if available, fallback to Type */}
                                 <Typography variant="subtitle1" fontWeight="bold">
-                                    {`Type: ${entry.type}`}
+                                    {entry.data.name}
                                 </Typography>
                                 <Typography variant="body2">
                                     {entry.type === 'Credit Card' && entry.data ? (
                                         <>
-                                            Card Number: **** **** **** {entry.data.cardNumber.slice(-4)}
+                                            Card Number: **** **** **** {entry.data.cardNumber.slice(-4)}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.cardNumber, 'Card Number')}
+                                            >
+                                                Copy Card Number
+                                            </Button>
                                             <br />
-                                            Expiry: {entry.data.expirationDate}
+                                            Expiry: {entry.data.expirationDate}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.expirationDate, 'Expiration Date')}
+                                            >
+                                                Copy Expiry
+                                            </Button>
                                             <br />
-                                            CVV: ***
+                                            CVV: ***{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.cvv, 'CVV')}
+                                            >
+                                                Copy CVV
+                                            </Button>
                                         </>
                                     ) : entry.type === 'Login' && entry.data ? (
                                         <>
-                                            Site/Application: {entry.data.siteName || 'N/A'}
+                                            Site/Application: {entry.data.siteName || 'N/A'}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.siteName, 'Site/Application')}
+                                            >
+                                                Copy Site/Application
+                                            </Button>
                                             <br />
-                                            Username: {entry.data.username}
+                                            Username: {entry.data.username}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.username, 'Username')}
+                                            >
+                                                Copy Username
+                                            </Button>
                                             <br />
-                                            Password: ******
+                                            Password: ******{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.password, 'Password')}
+                                            >
+                                                Copy Password
+                                            </Button>
                                         </>
                                     ) : entry.type === 'Passport' && entry.data ? (
                                         <>
-                                            Passport Number: {entry.data.passportNumber}
+                                            Passport Number: {entry.data.passportNumber}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.passportNumber, 'Passport Number')}
+                                            >
+                                                Copy Passport Number
+                                            </Button>
                                             <br />
-                                            Expiry: {entry.data.expirationDate}
+                                            Expiry: {entry.data.expirationDate}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.expirationDate, 'Expiration Date')}
+                                            >
+                                                Copy Expiry
+                                            </Button>
                                         </>
                                     ) : entry.type === 'License' && entry.data ? (
                                         <>
-                                            License Number: {entry.data.licenseNumber}
+                                            License Number: {entry.data.licenseNumber}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.licenseNumber, 'License Number')}
+                                            >
+                                                Copy License Number
+                                            </Button>
                                             <br />
-                                            Expiry: {entry.data.expirationDate}
+                                            Expiry: {entry.data.expirationDate}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.expirationDate, 'Expiration Date')}
+                                            >
+                                                Copy Expiry
+                                            </Button>
                                         </>
                                     ) : (
                                         JSON.stringify(entry.data, null, 2)
@@ -214,6 +310,13 @@ const VaultViewer: React.FC = () => {
                             <MenuItem value="License">License</MenuItem>
                         </Select>
                     </FormControl>
+                    {/* Input Name */}
+                    <TextField
+                        label="Name"
+                        fullWidth
+                        margin="normal"
+                        onChange={(e) => setEntryData({ ...entryData, name: e.target.value })}
+                    />
                     {renderEntryFields()}
                 </DialogContent>
                 <DialogActions>
