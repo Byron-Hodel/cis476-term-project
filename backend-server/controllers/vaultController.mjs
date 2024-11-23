@@ -41,3 +41,38 @@ export const getUserVaultEntries = async (req, res) => {
       });
     }
   };
+
+// Adding a way to add to the vault
+export const addVaultEntry = async (req, res) => {
+  const { type, data } = req.body; // Extracting type and data from the request body
+  const userId = req.user.userId; // Extract user ID from the authenticated user token
+
+  // validate input
+  if (!type || !data) {
+    return res.status(400).json({
+      success: false,
+      message: 'Both "type" and "data" fields are required.'
+    });
+  }
+
+  try {
+    // create a new entry in the vault table
+    const newVaultEntry = await Vault.create({
+      userId,
+      type,
+      data,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Vault entry created successfully.',
+      data: newVaultEntry,
+    });
+  } catch (error){
+    console.error('Error adding vault entry:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while adding the vault entry.',
+    });
+  }
+};

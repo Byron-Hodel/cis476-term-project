@@ -1,6 +1,6 @@
 import express from 'express';
 import authenticateToken from '../middleware/authenticate.mjs'; // Ensure the path to your middleware is correct
-import { getUserVaultEntries } from '../controllers/vaultController.mjs'; // Ensure the path to your controller is correct
+import { getUserVaultEntries, addVaultEntry } from '../controllers/vaultController.mjs'; // Ensure the path to your controller is correct
 
 const router = express.Router();
 
@@ -23,7 +23,7 @@ router.get('/test-auth', authenticateToken, (req, res) => {
 // Route to get all vault entries for a specific user, protected by JWT
 router.get('/:userId', authenticateToken, getUserVaultEntries); // Simplified the route path
 
-// You can add more vault-related routes here if needed
-// e.g., router.post('/add', authenticateToken, addVaultEntry);
+// Adding a route to add to the vault, protected by JWT
+router.post('/add', authenticateToken, addVaultEntry);
 
 export default router;
