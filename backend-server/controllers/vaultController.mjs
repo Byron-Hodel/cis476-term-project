@@ -76,3 +76,73 @@ export const addVaultEntry = async (req, res) => {
     });
   }
 };
+
+// Adding a way to update existing vault entries
+export const updateVaultEntry = async (req, res) => {
+  const { vaultId } = req.params; // Get vaultId from URL parameters
+  const { updatedData } = req.body; // Extract updatedData from request body
+
+  // Validate input
+  if (!updatedData) {
+    return res.status(400).json({
+      success: false,
+      message: '"updatedData" is required.',
+    });
+  }
+
+  try {
+    // Fetch the vault entry by its primary key
+    const vaultEntry = await Vault.findByPk(vaultId);
+
+    // Check if the entry exists and belongs to the authenticated user
+    if (!vaultEntry || vaultEntry.userId !== req.user.userId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vault entry not found or access denied.',
+      });
+    }
+
+    // Ensure `data` is handled as an object
+    let existingData = vaultEntry.data;
+
+    // If `data` is incorrectly stored as a string, parse it
+    if (typeof existingData === 'string') {
+      try {
+        existingData = JSON.parse(existingData);
+      } catch (error) {
+        console.error('Failed to parse existing data:', error);
+        return res.status(500).json({
+          success: false,
+          message: 'Failed to parse existing vault data.',
+        });
+      }
+    }
+
+    // Merge the existing data with the updated data
+    const updatedEntry = { ...existingData, ...updatedData };
+
+    // Save the updated data back to the database
+    vaultEntry.data = updatedEntry; // Sequelize handles JSONB directly
+    await vaultEntry.save();
+
+    // Prepare the response
+    res.status(200).json({
+      success: true,
+      message: 'Vault entry updated successfully.',
+      data: {
+        vaultId: vaultEntry.vaultId,
+        userId: vaultEntry.userId,
+        type: vaultEntry.type,
+        data: updatedEntry, // Ensure it's sent as a proper object
+        createdAt: vaultEntry.createdAt,
+        updatedAt: vaultEntry.updatedAt,
+      },
+    });
+  } catch (error) {
+    console.error('Error updating vault entry:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while updating the vault entry.',
+    });
+  }
+};
