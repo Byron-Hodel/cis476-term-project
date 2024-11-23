@@ -6,6 +6,7 @@ import Grid2 from '@mui/material/Grid2'; // Correct path for Grid2
 import { MediatorProvider } from '../components/MediatorContext';
 import PasswordGenerator from '../components/PasswordGenerator';
 import VaultViewer from '../components/VaultViewer';
+import WeakPasswordNotifier from '../components/WeakPasswordNotifier';
 
 const Dashboard: React.FC = () => {
     return (
@@ -19,6 +20,7 @@ const Dashboard: React.FC = () => {
                         <PasswordGenerator />
                     </Grid2>
                     <Grid2 size="grow" component="div">
+                        <WeakPasswordNotifier />
                         <VaultViewer />
                     </Grid2>
                 </Grid2>

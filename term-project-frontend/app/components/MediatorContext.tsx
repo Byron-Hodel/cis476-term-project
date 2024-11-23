@@ -1,7 +1,8 @@
 // MediatorContext.tsx
-import React, { useState, useEffect, createContext, useContext, ReactNode } from 'react';
+import React, { useCallback, useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import axiosInstance from '../utils/axiosInterceptor'; // Importing the axios instance with interceptor for token attachment
 import SessionManager from '../utils/SessionManager'; // Importing SessionManager to retrieve the stored token and user data
+import { PasswordObserver } from '../utils/Password_Observer'
 
 // Type definition for a single vault entry
 type VaultEntry = {
@@ -12,9 +13,12 @@ type VaultEntry = {
 
 // Type definition for the context that will be provided
 type MediatorContextType = {
-    vaultData: VaultEntry[]; // Array of vault entries
-    fetchVaultData: () => void; // Function to fetch vault data
-    addPasswordToVault: (newPassword: VaultEntry) => void; // Function to add a new password to the vault data
+    password_observers: PasswordObserver[];
+    vaultData: VaultEntry[];
+    fetchVaultData: () => void;
+    addPasswordToVault: (newPassword: VaultEntry) => void;
+    registerPasswordObserver: (observer: PasswordObserver) => void;
+    removePasswordObserver: (observer: PasswordObserver) => void;
 };
 
 // Creating the context and setting the initial value to undefined
@@ -23,6 +27,7 @@ const MediatorContext = createContext<MediatorContextType | undefined>(undefined
 // Provider component to wrap around components that need access to the context
 export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     const [vaultData, setVaultData] = useState<VaultEntry[]>([]); // State to hold the user's vault data
+    const [password_observers, setPasswordObservers] = useState<PasswordObserver[]>([]);
 
     // Function to fetch vault data from the backend API
     const fetchVaultData = async () => {
@@ -44,12 +49,25 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
             setVaultData([]); // Set an empty array if there is an error
         }
     };
-    
 
     // Function to add a new password entry to the state (could be expanded for API calls if needed)
     const addPasswordToVault = (newPassword: VaultEntry) => {
+        
         setVaultData((prevData) => [...prevData, newPassword]); // Update the state with the new entry
     };
+
+    const registerPasswordObserver = useCallback((observer: PasswordObserver) => {
+        setPasswordObservers((prev) => {
+            if (!prev.includes(observer)) {
+                return [...prev, observer];
+            }
+            return prev;
+        });
+    }, []);
+
+    const removePasswordObserver = useCallback((observer: PasswordObserver) => {
+        setPasswordObservers((prev) => prev.filter((obs) => obs !== observer));
+    }, []);
 
     // useEffect to call fetchVaultData when the component mounts
     useEffect(() => {
@@ -58,7 +76,7 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     // Provide the context value to child components
     return (
-        <MediatorContext.Provider value={{ vaultData, fetchVaultData, addPasswordToVault }}>
+        <MediatorContext.Provider value={{ password_observers, vaultData, fetchVaultData, addPasswordToVault, registerPasswordObserver, removePasswordObserver }}>
             {children}
         </MediatorContext.Provider>
     );
