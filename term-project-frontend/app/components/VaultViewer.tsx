@@ -27,6 +27,7 @@ const VaultViewer: React.FC = () => {
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [entryType, setEntryType] = useState('Password');
     const [entryData, setEntryData] = useState<any>({});
+    const [currentEntryIndex, setCurrentEntryIndex] = useState<number | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -40,6 +41,7 @@ const VaultViewer: React.FC = () => {
     }, []);
 
     const handleOpenDialog = () => {
+        setCurrentEntryIndex(null);
         setIsDialogOpen(true);
         setEntryType('Password');
         setEntryData({});
@@ -52,6 +54,28 @@ const VaultViewer: React.FC = () => {
     const handleAddEntry = () => {
         // Add entry to vault
         handleCloseDialog();
+    };
+
+    const handleSaveEntry = () => {
+        if (currentEntryIndex !== null) {
+            // Modify the existing entry
+            const updatedVaultData = [...vaultData];
+            updatedVaultData[currentEntryIndex] = { ...updatedVaultData[currentEntryIndex], data: entryData };
+            // Replace this with the function to update the vault data in the backend
+            console.log('Updated Vault Data:', updatedVaultData);
+        } else {
+            // Add a new entry
+            handleAddEntry();
+        }
+        handleCloseDialog();
+    };
+
+    const handleOpenDialogModify = (index: number) => {
+        const entry = vaultData[index];
+        setEntryType(entry.type);
+        setEntryData(entry.data);
+        setCurrentEntryIndex(index);
+        setIsDialogOpen(true);
     };
 
     const handleCopyToClipboardWithTimeout = (text: string, label: string) => {
@@ -212,6 +236,15 @@ const VaultViewer: React.FC = () => {
                                             >
                                                 Copy CVV
                                             </Button>
+                                            <br />
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={() => handleOpenDialogModify(index)}
+                                            >
+                                                Modify
+                                            </Button>
                                         </>
                                     ) : entry.type === 'Login' && entry.data ? (
                                         <>
@@ -241,6 +274,15 @@ const VaultViewer: React.FC = () => {
                                             >
                                                 Copy Password
                                             </Button>
+                                            <br />
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={() => handleOpenDialogModify(index)}
+                                            >
+                                                Modify
+                                            </Button>
                                         </>
                                     ) : entry.type === 'Passport' && entry.data ? (
                                         <>
@@ -260,6 +302,15 @@ const VaultViewer: React.FC = () => {
                                                 onClick={() => handleCopyToClipboardWithTimeout(entry.data.expirationDate, 'Expiration Date')}
                                             >
                                                 Copy Expiry
+                                            </Button>
+                                            <br />
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={() => handleOpenDialogModify(index)}
+                                            >
+                                                Modify
                                             </Button>
                                         </>
                                     ) : entry.type === 'License' && entry.data ? (
@@ -281,6 +332,15 @@ const VaultViewer: React.FC = () => {
                                             >
                                                 Copy Expiry
                                             </Button>
+                                            <br />
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={() => handleOpenDialogModify(index)}
+                                            >
+                                                Modify
+                                            </Button>
                                         </>
                                     ) : (
                                         JSON.stringify(entry.data, null, 2)
@@ -295,7 +355,7 @@ const VaultViewer: React.FC = () => {
             )}
 
             <Dialog open={isDialogOpen} onClose={handleCloseDialog}>
-                <DialogTitle>Add Vault Entry</DialogTitle>
+                <DialogTitle>{currentEntryIndex !== null ? 'Modify Vault Entry' : 'Add Vault Entry'}</DialogTitle>
                 <DialogContent>
                     <FormControl fullWidth margin="normal">
                         <InputLabel>Type</InputLabel>
@@ -310,19 +370,19 @@ const VaultViewer: React.FC = () => {
                             <MenuItem value="License">License</MenuItem>
                         </Select>
                     </FormControl>
-                    {/* Input Name */}
                     <TextField
                         label="Name"
                         fullWidth
                         margin="normal"
+                        value={entryData.name || ''}
                         onChange={(e) => setEntryData({ ...entryData, name: e.target.value })}
                     />
                     {renderEntryFields()}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={handleCloseDialog}>Cancel</Button>
-                    <Button variant="contained" color="primary" onClick={handleAddEntry}>
-                        Submit
+                    <Button variant="contained" color="primary" onClick={handleSaveEntry}>
+                        {currentEntryIndex !== null ? 'Save Changes' : 'Submit'}
                     </Button>
                 </DialogActions>
             </Dialog>
