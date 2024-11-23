@@ -1,6 +1,6 @@
 import express from 'express';
 import authenticateToken from '../middleware/authenticate.mjs'; // Ensure the path to your middleware is correct
-import { getUserVaultEntries, addVaultEntry, updateVaultEntry } from '../controllers/vaultController.mjs'; // Ensure the path to your controller is correct
+import { getUserVaultEntries, addVaultEntry, updateVaultEntry, deleteVaultEntry } from '../controllers/vaultController.mjs'; // Ensure the path to your controller is correct
 
 const router = express.Router();
 
@@ -28,5 +28,8 @@ router.post('/add', authenticateToken, addVaultEntry);
 
 // Adding a route for updating existing vault entries, protected by JWT
 router.patch('/update/:vaultId', authenticateToken, updateVaultEntry);
+
+// Adding a route for deleting an existing vault entry, protected by JWT
+router.delete('/delete/:vaultId', authenticateToken, deleteVaultEntry);
 
 export default router;

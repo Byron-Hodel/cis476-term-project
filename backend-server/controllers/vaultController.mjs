@@ -146,3 +146,36 @@ export const updateVaultEntry = async (req, res) => {
     });
   }
 };
+
+// Adding function to delete a entry from the vault
+export const deleteVaultEntry = async (req, res) => {
+  const { vaultId } = req.params;
+
+  try {
+    // Fetch the vault entry by its primary key
+    const vaultEntry = await Vault.findByPk(vaultId);
+
+    // Check if the entry exists and belongs to the authenticated user
+    if (!vaultEntry || vaultEntry.userId !== req.user.userId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vault entry not found or access denied.',
+      });
+    }
+
+    // Delete the entry
+    await vaultEntry.destroy();
+
+    // send a success response
+    res.status(200).json({
+      success: true,
+      message: 'Vault entry deleted successfully.',
+    });
+  } catch (error) {
+    console.error('Error deleting vault entry:', error);
+    res.status(500).json({
+      success: false,
+      message: 'An error occurred while deleting the vault entry.',
+    });
+  }
+};
