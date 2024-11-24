@@ -25,7 +25,7 @@ const VaultViewer: React.FC = () => {
     const { vaultData, fetchVaultData, addPasswordToVault } = useMediator();
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
-    const [entryType, setEntryType] = useState('Password');
+    const [entryType, setEntryType] = useState('Login');
     const [entryData, setEntryData] = useState<any>({});
     const [currentEntryIndex, setCurrentEntryIndex] = useState<number | null>(null);
 
@@ -43,7 +43,7 @@ const VaultViewer: React.FC = () => {
     const handleOpenDialog = () => {
         setCurrentEntryIndex(null);
         setIsDialogOpen(true);
-        setEntryType('Password');
+        setEntryType('Login');
         setEntryData({});
     };
 
@@ -51,9 +51,22 @@ const VaultViewer: React.FC = () => {
         setIsDialogOpen(false);
     };
 
-    const handleAddEntry = () => {
-        // Add entry to vault
-        handleCloseDialog();
+    const handleAddEntry = async () => {
+        try {
+            // Create the new entry object
+            const newEntry = {
+                type: entryType,
+                ...entryData, // Include all data from the form
+            };
+    
+            // Use the context function to add the entry to the backend
+            await addPasswordToVault(newEntry);
+    
+            // Close the dialog after adding the entry
+            handleCloseDialog();
+        } catch (error) {
+            console.error('Error adding new entry:', error);
+        }
     };
 
     const handleSaveEntry = () => {
@@ -364,7 +377,7 @@ const VaultViewer: React.FC = () => {
                             onChange={(e) => setEntryType(e.target.value)}
                             fullWidth
                         >
-                            <MenuItem value="Password">Password</MenuItem>
+                            <MenuItem value="Login">Login</MenuItem>
                             <MenuItem value="Credit Card">Credit Card</MenuItem>
                             <MenuItem value="Passport">Passport</MenuItem>
                             <MenuItem value="License">License</MenuItem>
