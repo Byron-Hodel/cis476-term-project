@@ -22,12 +22,14 @@ const VaultViewer: React.FC = () => {
     // global time for clipboard timeout
     const CLIPBOARD_TIMEOUT = 5 * 60 * 1000; // 5 minutes to time out
 
-    const { vaultData, fetchVaultData, addPasswordToVault, updateVaultEntry } = useMediator();
+    const { vaultData, fetchVaultData, addPasswordToVault, updateVaultEntry, deleteVaultEntry } = useMediator();
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [entryType, setEntryType] = useState('Login');
     const [entryData, setEntryData] = useState<any>({});
     const [currentEntryIndex, setCurrentEntryIndex] = useState<number | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+    const [entryToDeleteIndex, setEntryToDeleteIndex] = useState<number | null>(null);
 
     useEffect(() => {
         const loadData = async () => {
@@ -51,6 +53,16 @@ const VaultViewer: React.FC = () => {
         setIsDialogOpen(false);
     };
 
+    const openDeleteDialog = (index: number) => {
+        setEntryToDeleteIndex(index);
+        setIsDeleteDialogOpen(true);
+    };
+
+    const closeDeleteDialog = () => {
+        setEntryToDeleteIndex(null);
+        setIsDeleteDialogOpen(false);
+    };
+
     const handleAddEntry = async () => {
         try {
             // Create the new entry object
@@ -66,6 +78,19 @@ const VaultViewer: React.FC = () => {
             handleCloseDialog();
         } catch (error) {
             console.error('Error adding new entry:', error);
+        }
+    };
+
+    const handleDeleteEntry = async () => {
+        if (entryToDeleteIndex === null) return;
+
+        try {
+            const entry = vaultData[entryToDeleteIndex];
+            await deleteVaultEntry(entry.vaultId); // Replace with your deletion logic
+            await fetchVaultData(); // Refresh data
+            closeDeleteDialog();
+        } catch (error) {
+            console.error('Error deleting entry:', error);
         }
     };
 
@@ -262,6 +287,14 @@ const VaultViewer: React.FC = () => {
                                             >
                                                 Modify
                                             </Button>
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="error"
+                                                onClick={() => openDeleteDialog(index)}
+                                            >
+                                                Delete
+                                            </Button>
                                         </>
                                     ) : entry.type === 'Login' && entry.data ? (
                                         <>
@@ -300,6 +333,14 @@ const VaultViewer: React.FC = () => {
                                             >
                                                 Modify
                                             </Button>
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="error"
+                                                onClick={() => openDeleteDialog(index)}
+                                            >
+                                                Delete
+                                            </Button>
                                         </>
                                     ) : entry.type === 'Passport' && entry.data ? (
                                         <>
@@ -329,6 +370,14 @@ const VaultViewer: React.FC = () => {
                                             >
                                                 Modify
                                             </Button>
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="error"
+                                                onClick={() => openDeleteDialog(index)}
+                                            >
+                                                Delete
+                                            </Button>
                                         </>
                                     ) : entry.type === 'License' && entry.data ? (
                                         <>
@@ -357,6 +406,14 @@ const VaultViewer: React.FC = () => {
                                                 onClick={() => handleOpenDialogModify(index)}
                                             >
                                                 Modify
+                                            </Button>
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="error"
+                                                onClick={() => openDeleteDialog(index)}
+                                            >
+                                                Delete
                                             </Button>
                                         </>
                                     ) : (
@@ -400,6 +457,25 @@ const VaultViewer: React.FC = () => {
                     <Button onClick={handleCloseDialog}>Cancel</Button>
                     <Button variant="contained" color="primary" onClick={handleSaveEntry}>
                         {currentEntryIndex !== null ? 'Save Changes' : 'Submit'}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            <Dialog open={isDeleteDialogOpen} onClose={closeDeleteDialog}>
+                <DialogTitle>Confirm Deletion</DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Are you sure you want to delete this entry? This action cannot be undone.
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closeDeleteDialog}>Cancel</Button>
+                    <Button
+                        variant="contained"
+                        color="error"
+                        onClick={handleDeleteEntry}
+                    >
+                        Delete
                     </Button>
                 </DialogActions>
             </Dialog>
