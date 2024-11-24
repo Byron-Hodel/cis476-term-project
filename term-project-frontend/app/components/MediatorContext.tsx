@@ -122,13 +122,14 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     
         try {
-            // Send a POST request to add the new entry to the vault
-            console.log(vaultId);
+            // Send DELETE request to backend
             const response = await axiosInstance.delete(`/vault/delete/${vaultId}`);
     
-            // Update the state with the new entry on success
+            // If successful, update the state by filtering out the deleted entry
             if (response.data.success) {
-                setVaultData((prevData) => [...prevData, response.data.data]);
+                setVaultData((prevData) =>
+                    prevData.filter((entry) => entry.vaultId !== vaultId)
+                );
             } else {
                 console.error('Failed to delete entry:', response.data.message);
             }

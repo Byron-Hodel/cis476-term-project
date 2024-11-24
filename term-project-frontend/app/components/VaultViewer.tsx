@@ -83,11 +83,10 @@ const VaultViewer: React.FC = () => {
 
     const handleDeleteEntry = async () => {
         if (entryToDeleteIndex === null) return;
-
+    
         try {
             const entry = vaultData[entryToDeleteIndex];
-            await deleteVaultEntry(entry.vaultId); // Replace with your deletion logic
-            await fetchVaultData(); // Refresh data
+            await deleteVaultEntry(entry.vaultId); // Deletes the entry via MediatorContext
             closeDeleteDialog();
         } catch (error) {
             console.error('Error deleting entry:', error);
