@@ -17,6 +17,7 @@ type MediatorContextType = {
     vaultData: VaultEntry[];
     fetchVaultData: () => void;
     addPasswordToVault: (newPassword: VaultEntry) => void;
+    updateVaultEntry: (vaultId: number, entryData: VaultEntry) => void;
     registerPasswordObserver: (observer: PasswordObserver) => void;
     removePasswordObserver: (observer: PasswordObserver) => void;
 };
@@ -80,6 +81,35 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
         }
     };
 
+    // Function to add a new password entry to the state (could be expanded for API calls if needed)
+    const updateVaultEntry = async (vaultId: number, entryData: VaultEntry) => {
+        const session = SessionManager.getInstance();
+        const token = session.getToken();
+        const user = session.getUser() as { userId?: number };
+    
+        if (!token || !user || !user.userId) {
+            console.error('No token or user ID found. Please sign in.');
+            return;
+        }
+    
+        try {
+            // Send a POST request to add the new entry to the vault
+            console.log(entryData);
+            const response = await axiosInstance.patch(`/vault/update/${vaultId}`, {
+                entryData,
+            });
+    
+            // Update the state with the new entry on success
+            if (response.data.success) {
+                setVaultData((prevData) => [...prevData, response.data.data]);
+            } else {
+                console.error('Failed to modify entry:', response.data.message);
+            }
+        } catch (error) {
+            console.error('Error modifying vault entry:', error);
+        }
+    };
+
     const registerPasswordObserver = useCallback((observer: PasswordObserver) => {
         setPasswordObservers((prev) => {
             if (!prev.includes(observer)) {
@@ -100,7 +130,7 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
 
     // Provide the context value to child components
     return (
-        <MediatorContext.Provider value={{ password_observers, vaultData, fetchVaultData, addPasswordToVault, registerPasswordObserver, removePasswordObserver }}>
+        <MediatorContext.Provider value={{ password_observers, vaultData, fetchVaultData, addPasswordToVault, updateVaultEntry, registerPasswordObserver, removePasswordObserver }}>
             {children}
         </MediatorContext.Provider>
     );

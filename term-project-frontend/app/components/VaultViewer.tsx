@@ -22,7 +22,7 @@ const VaultViewer: React.FC = () => {
     // global time for clipboard timeout
     const CLIPBOARD_TIMEOUT = 5 * 60 * 1000; // 5 minutes to time out
 
-    const { vaultData, fetchVaultData, addPasswordToVault } = useMediator();
+    const { vaultData, fetchVaultData, addPasswordToVault, updateVaultEntry } = useMediator();
     const [loading, setLoading] = useState(true);
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [entryType, setEntryType] = useState('Login');
@@ -69,18 +69,21 @@ const VaultViewer: React.FC = () => {
         }
     };
 
-    const handleSaveEntry = () => {
-        if (currentEntryIndex !== null) {
-            // Modify the existing entry
-            const updatedVaultData = [...vaultData];
-            updatedVaultData[currentEntryIndex] = { ...updatedVaultData[currentEntryIndex], data: entryData };
-            // Replace this with the function to update the vault data in the backend
-            console.log('Updated Vault Data:', updatedVaultData);
-        } else {
-            // Add a new entry
-            handleAddEntry();
+    const handleSaveEntry = async () => {
+        try {
+            if (currentEntryIndex !== null) {
+                // Modify the existing entry
+                const entry = vaultData[currentEntryIndex];
+                await updateVaultEntry(entry.vaultId, entryData);
+            } else {
+                // Add a new entry
+                await handleAddEntry();
+            }
+
+            handleCloseDialog();
+        } catch (error) {
+            console.error('Error saving entry:', error);
         }
-        handleCloseDialog();
     };
 
     const handleOpenDialogModify = (index: number) => {
