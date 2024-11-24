@@ -75,6 +75,7 @@ const VaultViewer: React.FC = () => {
                 // Modify the existing entry
                 const entry = vaultData[currentEntryIndex];
                 await updateVaultEntry(entry.vaultId, entryData);
+                entry.data = entryData
             } else {
                 // Add a new entry
                 await handleAddEntry();

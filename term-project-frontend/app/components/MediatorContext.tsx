@@ -82,7 +82,7 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
     };
 
     // Function to add a new password entry to the state (could be expanded for API calls if needed)
-    const updateVaultEntry = async (vaultId: number, entryData: VaultEntry) => {
+    const updateVaultEntry = async (vaultId: number, updatedData: any) => {
         const session = SessionManager.getInstance();
         const token = session.getToken();
         const user = session.getUser() as { userId?: number };
@@ -94,9 +94,9 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
     
         try {
             // Send a POST request to add the new entry to the vault
-            console.log(entryData);
+            console.log(updatedData);
             const response = await axiosInstance.patch(`/vault/update/${vaultId}`, {
-                entryData,
+                updatedData,
             });
     
             // Update the state with the new entry on success
