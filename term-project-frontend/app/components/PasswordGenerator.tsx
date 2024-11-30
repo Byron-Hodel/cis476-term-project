@@ -1,27 +1,64 @@
 // PasswordGenerator.tsx
 import React, { useState } from 'react';
-import { Paper, Typography, Button, Checkbox, Grid2, TextField, FormControlLabel } from '@mui/material';
+import { Paper, Typography, Button, Checkbox, Grid2, TextField, FormControlLabel, Snackbar } from '@mui/material';
 import { useMediator } from './MediatorContext';
 import { PasswordBuilder } from '../utils/Password_Builder';
+import copy from 'copy-to-clipboard';
 
 const PasswordGenerator: React.FC = () => {
     const [password, setPassword] = useState<string>('');
     const [length, setLength] = useState<number>(8);
     const [includeUppercase, setIncludeUppercase] = useState<boolean>(false);
-    const [includeLowercase, setIncludeLowercase] = useState<boolean>(false);
+    const [includeLowercase, setIncludeLowercase] = useState<boolean>(true);
     const [includeNumbers, setIncludeNumbers] = useState<boolean>(false);
     const [includeSymbols, setIncludeSymbols] = useState<boolean>(false);
+    const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false); // State for snackbar visibility
+    const [snackbarMessage, setSnackbarMessage] = useState<string>(''); // State for snackbar message
     const { addPasswordToVault } = useMediator();
 
+    // Timeout for clipboard clearing (e.g., 5 minutes)
+    const CLIPBOARD_TIMEOUT = 5 * 60 * 1000;
+
+    // Function to generate a password based on user preferences
     const handleGeneratePassword = () => {
         const builder = new PasswordBuilder()
-          .setLength(length)
-          .includeUppercaseLetters(includeUppercase)
-          .includeLowercaseLetters(includeLowercase)
-          .includeNumbers(includeNumbers)
-          .includeSymbols(includeSymbols);
+            .setLength(length)
+            .includeUppercaseLetters(includeUppercase)
+            .includeLowercaseLetters(includeLowercase)
+            .includeNumbers(includeNumbers)
+            .includeSymbols(includeSymbols);
 
-        setPassword(builder.build());
+        const generatedPassword = builder.build(); // Build the password
+        setPassword(generatedPassword); // Update the password state
+        handleCopyToClipboardWithTimeout(generatedPassword, 'Generated Password'); // Copy password to clipboard
+    };
+
+    // Function to copy text to clipboard and clear it after a timeout
+    const handleCopyToClipboardWithTimeout = (text: string, label: string) => {
+        copy(text); // Copy the text to clipboard
+        setSnackbarMessage(`${label} copied to clipboard!`); // Set snackbar message
+        setSnackbarOpen(true); // Open the snackbar
+
+        // Set a timeout to clear the clipboard after a specified duration
+        setTimeout(() => {
+            if (navigator.clipboard) {
+                navigator.clipboard
+                    .writeText('') // Clear the clipboard
+                    .then(() => {
+                        console.log(`${label} cleared from clipboard after timeout.`);
+                    })
+                    .catch((err) => {
+                        console.error('Failed to clear clipboard:', err);
+                    });
+            } else {
+                console.warn('Clipboard API not supported.');
+            }
+        }, CLIPBOARD_TIMEOUT);
+    };
+
+    // Function to handle closing the snackbar
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false);
     };
 
     const generatePassword = () => {
@@ -117,6 +154,15 @@ const PasswordGenerator: React.FC = () => {
                     </Grid2>
                 )}
             </Grid2>
+
+            {/* Snackbar for feedback */}
+            <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={3000} // Automatically hide after 3 seconds
+                onClose={handleSnackbarClose}
+                message={snackbarMessage} // Show the snackbar message
+                anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Position of the snackbar
+            />
         </Paper>
     );
 };
