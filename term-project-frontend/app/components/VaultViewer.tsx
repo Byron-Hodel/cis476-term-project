@@ -18,6 +18,7 @@ import {
 } from '@mui/material';
 import { useMediator } from './MediatorContext';
 import copy from 'copy-to-clipboard';
+import { SensitiveDataProxy } from '../utils/SensitiveDataProxy';
 
 const VaultViewer: React.FC = () => {
     // global time for clipboard timeout
@@ -34,6 +35,8 @@ const VaultViewer: React.FC = () => {
      // Snackbar state for copy-to-clipboard notifications
      const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
      const [snackbarMessage, setSnackbarMessage] = useState<string>('');
+     // State to manage the visibility of sensitive data fields in vault entries.
+     const [visibilityProxies, setVisibilityProxies] = useState<{ [key: string]: SensitiveDataProxy }>({});
 
     useEffect(() => {
         const loadData = async () => {
@@ -45,6 +48,52 @@ const VaultViewer: React.FC = () => {
 
         loadData();
     }, []);
+
+    /**
+     * Toggles the visibility state of a specific sensitive field in the vault entry.
+     * If the field doesn't already have a proxy, it initializes one. If a proxy exists,
+     * it toggles the visibility of the associated data.
+     *
+     * @param entryIndex - The index of the vault entry in the list.
+     * @param fieldName - The name of the field whose visibility is being toggled.
+     * @param sensitiveData - The actual sensitive data for the field.
+    */
+    const handleToggleVisibility = (entryIndex: number, fieldName: string, sensitiveData: string) => {
+        // Create a unique key to identify the proxy for this specific entry and field
+        const key = `${entryIndex}-${fieldName}`;
+
+        // Make a shallow copy of the current visibility proxies state
+        const proxies = { ...visibilityProxies };
+
+        // Check if a proxy for this key exists
+        if (!proxies[key]) {
+            // If no proxy exists, initialize one with the sensitive data
+            proxies[key] = new SensitiveDataProxy(sensitiveData);
+        } else {
+            // If a proxy exists, toggle its visibility state
+            proxies[key].toggleVisibility();
+        }
+        // Update the visibilityProxies state to trigger a re-render
+        setVisibilityProxies(proxies);
+    };
+
+    /**
+     * Retrieves the appropriate representation of the sensitive data for a specific field.
+     * If the field's proxy indicates the data is hidden, a masked version ("******") is returned.
+     * Otherwise, the actual sensitive data is returned.
+     *
+     * @param entryIndex - The index of the vault entry in the list.
+     * @param fieldName - The name of the field whose data is being retrieved.
+     * @param sensitiveData - The actual sensitive data for the field.
+     * @returns {string} - The visible or masked representation of the sensitive data.
+    */
+    const getVisibleData = (entryIndex: number, fieldName: string, sensitiveData: string) => {
+        // Create a unique key to identify the proxy for this specific entry and field
+        const key = `${entryIndex}-${fieldName}`;
+
+        // Retrieve the data from the proxy if it exists, or return a masked default
+        return visibilityProxies[key]?.getData() || "******";
+    };
 
     const handleOpenDialog = () => {
         setCurrentEntryIndex(null);
@@ -276,198 +325,308 @@ const VaultViewer: React.FC = () => {
                                 <Typography variant="body2">
                                     {entry.type === 'Credit Card' && entry.data ? (
                                         <>
-                                            Card Number: **** **** **** {entry.data.cardNumber.slice(-4)}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.cardNumber, 'Card Number')}
-                                            >
-                                                Copy Card Number
-                                            </Button>
-                                            <br />
-                                            Expiry: {entry.data.expirationDate}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.expirationDate, 'Expiration Date')}
-                                            >
-                                                Copy Expiry
-                                            </Button>
-                                            <br />
-                                            CVV: ***{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.cvv, 'CVV')}
-                                            >
-                                                Copy CVV
-                                            </Button>
-                                            <br />
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="secondary"
-                                                onClick={() => handleOpenDialogModify(index)}
-                                            >
-                                                Modify
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="error"
-                                                onClick={() => openDeleteDialog(index)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </>
+                                        Card Number: {getVisibleData(index, "cardNumber", entry.data.cardNumber)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "cardNumber", entry.data.cardNumber)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-cardNumber`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.cardNumber, "Card Number")
+                                            }
+                                        >
+                                            Copy Card Number
+                                        </Button>
+                                        <br />
+                                        Expiry: {entry.data.expirationDate}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.expirationDate, "Expiry")
+                                            }
+                                        >
+                                            Copy Expiry
+                                        </Button>
+                                        <br />
+                                        CVV: {getVisibleData(index, "cvv", entry.data.cvv)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() => handleToggleVisibility(index, "cvv", entry.data.cvv)}
+                                        >
+                                            {visibilityProxies[`${index}-cvv`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.cvv, "CVV")
+                                            }
+                                        >
+                                            Copy CVV
+                                        </Button>
+                                        <br />
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => handleOpenDialogModify(index)}
+                                        >
+                                            Modify
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => openDeleteDialog(index)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </>
                                     ) : entry.type === 'Login' && entry.data ? (
-                                        <>
-                                            Site/Application: {entry.data.siteName || 'N/A'}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.siteName, 'Site/Application')}
-                                            >
-                                                Copy Site/Application
-                                            </Button>
-                                            <br />
-                                            Username: {entry.data.username}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.username, 'Username')}
-                                            >
-                                                Copy Username
-                                            </Button>
-                                            <br />
-                                            Password: ******{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.password, 'Password')}
-                                            >
-                                                Copy Password
-                                            </Button>
-                                            <br />
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="secondary"
-                                                onClick={() => handleOpenDialogModify(index)}
-                                            >
-                                                Modify
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="error"
-                                                onClick={() => openDeleteDialog(index)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </>
+                                    <>
+                                        Site/Application: {entry.data.siteName || "N/A"}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(
+                                                    entry.data.siteName,
+                                                    "Site/Application"
+                                                )
+                                            }
+                                        >
+                                            Copy Site/Application
+                                        </Button>
+                                        <br />
+                                        Username: {getVisibleData(index, "username", entry.data.username)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "username", entry.data.username)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-username`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(
+                                                    entry.data.username,
+                                                    "Username"
+                                                )
+                                            }
+                                        >
+                                            Copy Username
+                                        </Button>
+                                        <br />
+                                        Password: {getVisibleData(index, "password", entry.data.password)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "password", entry.data.password)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-password`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(
+                                                    entry.data.password,
+                                                    "Password"
+                                                )
+                                            }
+                                        >
+                                            Copy Password
+                                        </Button>
+                                        <br />
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => handleOpenDialogModify(index)}
+                                        >
+                                            Modify
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => openDeleteDialog(index)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </>
                                     ) : entry.type === 'Passport' && entry.data ? (
-                                        <>
-                                            Passport Number: {entry.data.passportNumber}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.passportNumber, 'Passport Number')}
-                                            >
-                                                Copy Passport Number
-                                            </Button>
-                                            <br />
-                                            Expiry: {entry.data.expirationDate}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.expirationDate, 'Expiration Date')}
-                                            >
-                                                Copy Expiry
-                                            </Button>
-                                            <br />
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="secondary"
-                                                onClick={() => handleOpenDialogModify(index)}
-                                            >
-                                                Modify
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="error"
-                                                onClick={() => openDeleteDialog(index)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </>
+                                    <>
+                                        Passport Number: {getVisibleData(index, "passportNumber", entry.data.passportNumber)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "passportNumber", entry.data.passportNumber)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-passportNumber`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.passportNumber, "Passport Number")
+                                            }
+                                        >
+                                            Copy Passport Number
+                                        </Button>
+                                        <br />
+                                        Expiry: {getVisibleData(index, "expirationDate", entry.data.expirationDate)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "expirationDate", entry.data.expirationDate)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-expirationDate`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.expirationDate, "Expiration Date")
+                                            }
+                                        >
+                                            Copy Expiry
+                                        </Button>
+                                        <br />
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => handleOpenDialogModify(index)}
+                                        >
+                                            Modify
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => openDeleteDialog(index)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </>
                                     ) : entry.type === 'License' && entry.data ? (
-                                        <>
-                                            License Number: {entry.data.licenseNumber}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.licenseNumber, 'License Number')}
-                                            >
-                                                Copy License Number
-                                            </Button>
-                                            <br />
-                                            Expiry: {entry.data.expirationDate}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.expirationDate, 'Expiration Date')}
-                                            >
-                                                Copy Expiry
-                                            </Button>
-                                            <br />
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="secondary"
-                                                onClick={() => handleOpenDialogModify(index)}
-                                            >
-                                                Modify
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="error"
-                                                onClick={() => openDeleteDialog(index)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </>
+                                    <>
+                                        License Number: {getVisibleData(index, "licenseNumber", entry.data.licenseNumber)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "licenseNumber", entry.data.licenseNumber)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-licenseNumber`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.licenseNumber, "License Number")
+                                            }
+                                        >
+                                            Copy License Number
+                                        </Button>
+                                        <br />
+                                        Expiry: {getVisibleData(index, "expirationDate", entry.data.expirationDate)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "expirationDate", entry.data.expirationDate)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-expirationDate`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.expirationDate, "Expiration Date")
+                                            }
+                                        >
+                                            Copy Expiry
+                                        </Button>
+                                        <br />
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => handleOpenDialogModify(index)}
+                                        >
+                                            Modify
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => openDeleteDialog(index)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </>
                                     ) : entry.type === 'Secure Notes' ? (
-                                        <>
-                                            Notes: {entry.data.notes}{' '}
-                                            <Button
-                                                size="small"
-                                                variant="outlined"
-                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.notes, 'Notes')}
-                                            >
-                                                Copy Notes
-                                            </Button>
-                                            <br />
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="secondary"
-                                                onClick={() => handleOpenDialogModify(index)}
-                                            >
-                                                Modify
-                                            </Button>
-                                            <Button
-                                                size="small"
-                                                variant="contained"
-                                                color="error"
-                                                onClick={() => openDeleteDialog(index)}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </>
+                                    <>
+                                        Notes: {getVisibleData(index, "notes", entry.data.notes)}{" "}
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleToggleVisibility(index, "notes", entry.data.notes)
+                                            }
+                                        >
+                                            {visibilityProxies[`${index}-notes`]?.isHidden ? "Show" : "Hide"}
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="outlined"
+                                            onClick={() =>
+                                                handleCopyToClipboardWithTimeout(entry.data.notes, "Notes")
+                                            }
+                                        >
+                                            Copy Notes
+                                        </Button>
+                                        <br />
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="secondary"
+                                            onClick={() => handleOpenDialogModify(index)}
+                                        >
+                                            Modify
+                                        </Button>
+                                        <Button
+                                            size="small"
+                                            variant="contained"
+                                            color="error"
+                                            onClick={() => openDeleteDialog(index)}
+                                        >
+                                            Delete
+                                        </Button>
+                                    </>
                                     ) : (
                                         JSON.stringify(entry.data, null, 2)
                                     )}
