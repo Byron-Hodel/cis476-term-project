@@ -138,7 +138,7 @@ const VaultViewer: React.FC = () => {
                         console.log(`${label} cleared from clipboard after timeout.`);
                     })
                     .catch((err) => {
-                        console.error('Failed to clear clipboard:', err);
+                        console.log('Failed to clear clipboard:', err); // can't clear when the app isnt focused, not our choice
                     });
             } else {
                 console.warn('Clipboard API not supported.');
