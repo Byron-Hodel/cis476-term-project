@@ -14,6 +14,7 @@ import {
     Select,
     FormControl,
     InputLabel,
+    Snackbar
 } from '@mui/material';
 import { useMediator } from './MediatorContext';
 import copy from 'copy-to-clipboard';
@@ -30,6 +31,9 @@ const VaultViewer: React.FC = () => {
     const [currentEntryIndex, setCurrentEntryIndex] = useState<number | null>(null);
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [entryToDeleteIndex, setEntryToDeleteIndex] = useState<number | null>(null);
+     // Snackbar state for copy-to-clipboard notifications
+     const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+     const [snackbarMessage, setSnackbarMessage] = useState<string>('');
 
     useEffect(() => {
         const loadData = async () => {
@@ -104,6 +108,8 @@ const VaultViewer: React.FC = () => {
                 // Add a new entry
                 await handleAddEntry();
             }
+            // Fetch updated vault data from the API
+            await fetchVaultData();
 
             handleCloseDialog();
         } catch (error) {
@@ -121,7 +127,8 @@ const VaultViewer: React.FC = () => {
 
     const handleCopyToClipboardWithTimeout = (text: string, label: string) => {
         copy(text); // Use `copy-to-clipboard` to copy the initial value
-        alert(`${label} copied to clipboard!`);
+        setSnackbarMessage(`${label} copied to clipboard!`); // Set snackbar message
+        setSnackbarOpen(true); // Show the snackbar
     
         setTimeout(() => {
             if (navigator.clipboard) {
@@ -137,6 +144,10 @@ const VaultViewer: React.FC = () => {
                 console.warn('Clipboard API not supported.');
             }
         }, CLIPBOARD_TIMEOUT);
+    };
+
+    const handleSnackbarClose = () => {
+        setSnackbarOpen(false); // Close the snackbar
     };
 
     const renderEntryFields = () => {
@@ -424,6 +435,14 @@ const VaultViewer: React.FC = () => {
                     ) : (
                         <Typography>No data stored in the vault.</Typography>
                     )}
+                    {/* Snackbar for clipboard notifications */}
+                    <Snackbar
+                        open={snackbarOpen}
+                        autoHideDuration={3000} // Automatically hide after 3 seconds
+                        onClose={handleSnackbarClose}
+                        message={snackbarMessage} // Display the clipboard message
+                        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }} // Position at bottom center
+                    />
                 </>
             )}
 
@@ -479,6 +498,7 @@ const VaultViewer: React.FC = () => {
                 </DialogActions>
             </Dialog>
         </Paper>
+        
     );
 };
 
