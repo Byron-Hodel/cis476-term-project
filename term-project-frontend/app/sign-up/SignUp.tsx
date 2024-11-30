@@ -77,18 +77,41 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [passwordErrorMessage, setPasswordErrorMessage] = React.useState('');
   const [nameError, setNameError] = React.useState(false);
   const [nameErrorMessage, setNameErrorMessage] = React.useState('');
-  const [securityAnswers, setSecurityAnswers] = React.useState<string[]>(['','','']);
-  // State variables for security question errors
-  const [securityErrors, setSecurityErrors] = React.useState([false, false, false]);
-  const [securityErrorMessages, setSecurityErrorMessages] = React.useState([
-    '',
-    '',
-    '',
-  ]);
+  const [securityAnswers, setSecurityAnswers] = React.useState<string[]>(['', '', '']);
   const [alertOpen, setAlertOpen] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState('');
-  const [alertSeverity, setAlertSeverity] = React.useState<'success' | 'error'>('success');
+  const [alertSeverity, setAlertSeverity] = React.useState<'success' | 'error' | 'warning'>('success');
+  const [securityErrors, setSecurityErrors] = React.useState([false, false, false]);
+  const [securityErrorMessages, setSecurityErrorMessages] = React.useState(['', '', '']);
   const router = useRouter();
+
+  // List of all security questions
+  const securityQuestions = [
+    "What is your mother's maiden name?",
+    "What was the name of your first pet?",
+    "What was your first school?",
+    "What is your favorite book?",
+    "What was the make of your first car?",
+    "What is your favorite movie?",
+  ];
+
+  const [selectedQuestions, setSelectedQuestions] = React.useState<string[]>(['', '', '']);
+
+  // Handles selection of security questions dynamically
+  const handleSecurityQuestionChange = (index: number, value: string) => {
+    setSelectedQuestions((prev) => {
+      const updatedQuestions = [...prev];
+      updatedQuestions[index] = value;
+      return updatedQuestions;
+    });
+  };
+
+  // Filters options dynamically to exclude already selected questions
+  const getFilteredOptions = (index: number) => {
+    return securityQuestions.filter(
+      (question) => !selectedQuestions.includes(question) || selectedQuestions[index] === question
+    );
+  };
 
   const handleAlertClose = () => {
     setAlertOpen(false);
@@ -109,6 +132,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
     let isValid = true;
 
+    // Email validation
     if (!email.value || !/\S+@\S+\.\S+/.test(email.value)) {
       setEmailError(true);
       setEmailErrorMessage('Please enter a valid email address.');
@@ -118,15 +142,31 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       setEmailErrorMessage('');
     }
 
-    if (!password.value || password.value.length < 6) {
+    // Password validation
+    const passwordValue = password.value;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    if (!passwordValue || !passwordRegex.test(passwordValue)) {
       setPasswordError(true);
-      setPasswordErrorMessage('Password must be at least 6 characters long.');
+      setPasswordErrorMessage(
+        'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.'
+      );
       isValid = false;
     } else {
       setPasswordError(false);
       setPasswordErrorMessage('');
     }
 
+    // Weak password warning
+    const weakPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/; // Lacks special character
+    if (passwordValue && weakPasswordRegex.test(passwordValue) && !passwordRegex.test(passwordValue)) {
+      setAlertMessage(
+        'Your password is strong but could be improved by adding a special character.'
+      );
+      setAlertSeverity('warning');
+      setAlertOpen(true);
+    }
+
+    // Name validation
     if (!name.value || name.value.length < 1) {
       setNameError(true);
       setNameErrorMessage('Name is required.');
@@ -157,28 +197,22 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent default values from being sent
 
-    // Test trigger: display a success alert without any conditions
-    // setAlertMessage('This is a test alert for successful sign-up.');
-    // setAlertSeverity('success');
-    // setAlertOpen(true);
-
-    if (!validateInputs()){
+    if (!validateInputs()) {
       event.preventDefault();
       return;
     }
 
     const data = new FormData(event.currentTarget);
 
-    // Converting FormData to a JSON Object
     const formData = {
       name: data.get('name'),
       email: data.get('email'),
       password: data.get('password'),
-      securityQuestion1: data.get('securityQuestion1'),
+      securityQuestion1: selectedQuestions[0],
       securityAnswer1: securityAnswers[0],
-      securityQuestion2: data.get('securityQuestion2'),
+      securityQuestion2: selectedQuestions[1],
       securityAnswer2: securityAnswers[1],
-      securityQuestion3: data.get('securityQuestion3'),
+      securityQuestion3: selectedQuestions[2],
       securityAnswer3: securityAnswers[2],
     };
 
@@ -189,12 +223,12 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
           'Content-Type': 'application/json',
         },
       });
-  
+
       console.log('Sign-up successful:', response.data);
       setAlertMessage('Sign-up successful.');
       setAlertSeverity('success');
       setAlertOpen(true);
-      // Optionally, navigate to another page or reset the form
+      // Navigate to sign-in page after success
       setTimeout(() => {
         router.push('/sign-in');
       }, 2000);
@@ -206,7 +240,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     }
   };
 
-   return (
+  return (
     <>
       <AppTheme {...props}>
         <CssBaseline enableColorScheme />
@@ -279,19 +313,16 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                   <Select
                     id={`security-question-${i + 1}`}
                     name={`securityQuestion${i + 1}`}
-                    defaultValue=""
+                    value={selectedQuestions[i]}
+                    onChange={(e) => handleSecurityQuestionChange(i, e.target.value)}
                     required
                   >
                     <MenuItem value="">Select a question</MenuItem>
-                    <MenuItem value="What is your mother's maiden name?">
-                      What is your mother's maiden name?
-                    </MenuItem>
-                    <MenuItem value="What was the name of your first pet?">
-                      What was the name of your first pet?
-                    </MenuItem>
-                    <MenuItem value="What was your first school?">
-                      What was your first school?
-                    </MenuItem>
+                    {getFilteredOptions(i).map((option, idx) => (
+                      <MenuItem key={idx} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
                   </Select>
                   <TextField
                     fullWidth
@@ -324,5 +355,4 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
       </Snackbar>
     </>
   );
-  
 }

@@ -25,8 +25,36 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
   const [error, setError] = React.useState<string | null>(null);
   const [success, setSuccess] = React.useState<string | null>(null);
   const [newPassword, setNewPassword] = React.useState<string>('');
+  const [passwordError, setPasswordError] = React.useState<string | null>(null);
   const [showPasswordChange, setShowPasswordChange] = React.useState(false);
   const router = useRouter();
+
+  // Function to validate the new password strength
+  const validatePassword = (password: string): boolean => {
+    // Regex for strong passwords: Minimum 8 characters, at least one uppercase letter, one lowercase letter, one number, and one special character
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{8,}$/;
+    // Regex for weak passwords: Minimum 8 characters, at least one uppercase letter, one lowercase letter, and one number (no special character required)
+    const weakPasswordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+    if (!passwordRegex.test(password)) {
+      if (weakPasswordRegex.test(password)) {
+        // Password is strong but lacks a special character
+        setPasswordError(
+          'Your password is strong but could be improved by adding a special character.'
+        );
+      } else {
+        // Password is invalid
+        setPasswordError(
+          'Password must be at least 8 characters long, include an uppercase letter, a lowercase letter, a number, and a special character.'
+        );
+      }
+      return false;
+    }
+
+    // Password is valid
+    setPasswordError(null);
+    return true;
+  };
 
   // Function to handle fetching security questions by email
   const handleEmailSubmit = async () => {
@@ -113,13 +141,20 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
 
   // Function to handle changing the password and auto-signing in
   const handlePasswordChange = async () => {
+    // Ensure the new password is provided
     if (!newPassword) {
       setError('Please enter a new password.');
       return;
     }
 
+    // Validate the password strength
+    if (!validatePassword(newPassword)) {
+      return;
+    }
+
     setLoading(true);
     setError(null);
+
     try {
       const response = await fetch('http://localhost:4000/api/users/change-password', {
         method: 'POST',
@@ -202,6 +237,7 @@ export default function ForgotPassword({ open, handleClose }: ForgotPasswordProp
               fullWidth
               required
             />
+            {passwordError && <Alert severity="warning">{passwordError}</Alert>}
             {error && <Alert severity="error">{error}</Alert>}
             {success && <Alert severity="success">{success}</Alert>}
           </>
