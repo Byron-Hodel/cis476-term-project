@@ -1,0 +1,298 @@
+{
+	"info": {
+		"_postman_id": "e81a2e81-c092-4c46-abf2-cab5434b0345",
+		"name": "CIS 476 - Term Project APIs",
+		"description": "Created for CIS 476 term project for password app, testing backend api's",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "39958989",
+		"_collection_link": "https://cis-476-term-project.postman.co/workspace/CIS-476---Term-Project-Workspac~1371a9ad-8005-4202-b019-329f8f34a8f4/collection/39958989-e81a2e81-c092-4c46-abf2-cab5434b0345?action=share&source=collection_link&creator=39958989"
+	},
+	"item": [
+		{
+			"name": "User Sign Up",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"John Doe\",\r\n  \"email\": \"johndoe@example.com\",\r\n  \"password\": \"SecurePassword123\",\r\n  \"active\": true,\r\n  \"securityQuestion1\": \"What is your mother's maiden name?\",\r\n  \"securityAnswer1\": \"Smith\",\r\n  \"securityQuestion2\": \"What was the name of your first pet?\",\r\n  \"securityAnswer2\": \"Buddy\",\r\n  \"securityQuestion3\": \"What city were you born in?\",\r\n  \"securityAnswer3\": \"New York\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/users/signup",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"users",
+						"signup"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "User Sign In",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"johndoe@example.com\",\r\n  \"password\": \"123456\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/users/signin",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"users",
+						"signin"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Retrieving All Users Vault Info",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImVtYWlsIjoiam9obmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTczMTE3NDgzNCwiZXhwIjoxNzMxMjYxMjM0fQ.X5B_7v7-AzkHnY31NF2_je12mmL6PMcDlAbP2BtFICk",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:4000/api/vault/6",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"vault",
+						"6"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Getting Users Security Questions",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"johndoe@example.com\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/users/get-security-questions",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"users",
+						"get-security-questions"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Verifying Users Security Answers",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"johndoe@example.com\",\r\n  \"answers\": [\r\n    { \"question\": \"What city were you born in?\", \"answer\": \"New York\" },\r\n    { \"question\": \"What is your mother's maiden name?\", \"answer\": \"Smith\" },\r\n    { \"question\": \"What was the name of your first pet?\", \"answer\": \"Buddy\" }\r\n  ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/users/verify-security-answers",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"users",
+						"verify-security-answers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Adding entries to the vault",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImVtYWlsIjoiam9obmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTczMjM5MzQ4MCwiZXhwIjoxNzMyNDc5ODgwfQ.CeBCYKfncHls1CTedcdPFRHpaKoyURUQ5wgwMZGaBds",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"type\": \"Login\",\r\n    \"data\": {\r\n        \"name\": \"POSTMAN\",\r\n        \"username\": \"exampleuser\",\r\n        \"password\": \"securepassword123\",\r\n        \"notes\": \"My primary login details\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/vault/add",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"vault",
+						"add"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Updating vault entry changing login password",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImVtYWlsIjoiam9obmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTczMjM5MzQ4MCwiZXhwIjoxNzMyNDc5ODgwfQ.CeBCYKfncHls1CTedcdPFRHpaKoyURUQ5wgwMZGaBds",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"POSTMAN\",\r\n  \"updatedData\": {\r\n    \"password\": \"123456\"\r\n  }\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/vault/update/8",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"vault",
+						"update",
+						"8"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Updating a vault entry - type: passport",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:4000/api/vault/update/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"vault",
+						"update",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Deleting an entry from the vault",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjYsImVtYWlsIjoiam9obmRvZUBleGFtcGxlLmNvbSIsImlhdCI6MTczMjM5MzQ4MCwiZXhwIjoxNzMyNDc5ODgwfQ.CeBCYKfncHls1CTedcdPFRHpaKoyURUQ5wgwMZGaBds",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:4000/api/vault/delete/10",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"vault",
+						"delete",
+						"10"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
