@@ -47,7 +47,7 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
             console.log('Response from API:', response.data);
             setVaultData(response.data.data); // Ensure this does not trigger a loop
         } catch (error) {
-            console.error('Error fetching vault data:', error);
+            console.log('No vault data, or error from backend:', error);
             setVaultData([]); // Set an empty array if there is an error
         }
     };
