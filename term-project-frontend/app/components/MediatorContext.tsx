@@ -3,6 +3,7 @@ import React, { useCallback, useState, useEffect, createContext, useContext, Rea
 import axiosInstance from '../utils/axiosInterceptor'; // Importing the axios instance with interceptor for token attachment
 import SessionManager from '../utils/SessionManager'; // Importing SessionManager to retrieve the stored token and user data
 import { PasswordObserver } from '../utils/Password_Observer'
+import { isPasswordWeak } from '../utils/PasswordStrengthCheck';
 
 // Type definition for a single vault entry
 type VaultEntry = {
@@ -31,6 +32,19 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
     const [vaultData, setVaultData] = useState<VaultEntry[]>([]); // State to hold the user's vault data
     const [password_observers, setPasswordObservers] = useState<PasswordObserver[]>([]);
 
+    const check_passwords = () => {
+        console.log(vaultData.length);
+        vaultData.forEach((entry: VaultEntry) => {
+            if (entry.type == "Login") {
+                let is_weak = isPasswordWeak(entry.data.password);
+                console.log(password_observers.length, is_weak);
+                password_observers.forEach((observer) => observer.notify(entry.data.name, is_weak));
+            }
+        });
+    }
+
+    useEffect(check_passwords, [vaultData, password_observers]);
+
     // Function to fetch vault data from the backend API
     const fetchVaultData = async () => {
         const session = SessionManager.getInstance();
@@ -46,8 +60,9 @@ export const MediatorProvider: React.FC<{ children: ReactNode }> = ({ children }
             const response = await axiosInstance.get(`/vault/${user.userId}`);
             console.log('Response from API:', response.data);
             setVaultData(response.data.data); // Ensure this does not trigger a loop
+            check_passwords();
         } catch (error) {
-            console.log('No vault data, or error from backend:', error);
+            console.log('Error fetching vault data:', error);
             setVaultData([]); // Set an empty array if there is an error
         }
     };

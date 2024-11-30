@@ -12,14 +12,15 @@ const WeakPasswordNotifier: React.FC = () => {
 
     useEffect(() => {
         const observer: PasswordObserver = {
-            notify: (password: string, isWeak: boolean) => {
+            notify: (name: string, isWeak: boolean) => {
                 if (isWeak) {
+                    console.log(name);
                     setNotification({
                         open: true,
-                        message: `Weak password detected: "${password}". Consider making it stronger.`,
+                        message: `Weak password detected for login: "${name}". Consider making it stronger.`,
                     });
                 }
-            },
+            }
         };
 
         registerPasswordObserver(observer);
