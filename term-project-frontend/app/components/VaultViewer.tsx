@@ -209,6 +209,20 @@ const VaultViewer: React.FC = () => {
                         />
                     </>
                 );
+                case 'Secure Notes': // New case for Secure Notes
+                return (
+                    <>
+                        <TextField
+                            label="Notes"
+                            fullWidth
+                            multiline
+                            rows={4}
+                            margin="normal"
+                            value={entryData.notes || ''}
+                            onChange={(e) => setEntryData({ ...entryData, notes: e.target.value })}
+                        />
+                    </>
+                );
             default:
                 return (
                     <>
@@ -426,6 +440,34 @@ const VaultViewer: React.FC = () => {
                                                 Delete
                                             </Button>
                                         </>
+                                    ) : entry.type === 'Secure Notes' ? (
+                                        <>
+                                            Notes: {entry.data.notes}{' '}
+                                            <Button
+                                                size="small"
+                                                variant="outlined"
+                                                onClick={() => handleCopyToClipboardWithTimeout(entry.data.notes, 'Notes')}
+                                            >
+                                                Copy Notes
+                                            </Button>
+                                            <br />
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={() => handleOpenDialogModify(index)}
+                                            >
+                                                Modify
+                                            </Button>
+                                            <Button
+                                                size="small"
+                                                variant="contained"
+                                                color="error"
+                                                onClick={() => openDeleteDialog(index)}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </>
                                     ) : (
                                         JSON.stringify(entry.data, null, 2)
                                     )}
@@ -460,6 +502,7 @@ const VaultViewer: React.FC = () => {
                             <MenuItem value="Credit Card">Credit Card</MenuItem>
                             <MenuItem value="Passport">Passport</MenuItem>
                             <MenuItem value="License">License</MenuItem>
+                            <MenuItem value="Secure Notes">Secure Notes</MenuItem>
                         </Select>
                     </FormControl>
                     <TextField
