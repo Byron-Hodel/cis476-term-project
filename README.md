@@ -86,5 +86,5 @@ cis476-term-project/
 │   ├── app/           # frontend source code
 │   ├── public/        # Public assets
 │   └── package.json   # Frontend package configuration
-└── README.md       # Project documentation
+└── README.md          # Project documentation
 ```
