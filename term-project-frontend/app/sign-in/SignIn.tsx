@@ -1,3 +1,8 @@
+/**
+ * This file defines a SignIn component for user authentication.
+ * It includes a form with validation, a forgot password feature, and integration with SessionManager for session management.
+ * Material-UI components are used for styling and functionality.
+ */
 import * as React from 'react';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -21,6 +26,7 @@ import Alert from '@mui/material/Alert';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 
+// Styled Material-UI Card for the sign-in form
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -40,6 +46,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   }),
 }));
 
+// Container for the sign-in form with responsive layout and styles
 const SignInContainer = styled(Stack)(({ theme }) => ({
   height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
   minHeight: '100%',
