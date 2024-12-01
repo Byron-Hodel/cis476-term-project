@@ -85,7 +85,6 @@ cis476-term-project/
 │   ├── node_modules/  # Frontend dependencies
 │   ├── app/           # frontend source code
 │   ├── public/        # Public assets
-│   ├── .env.local     # Environment variables (not included by default)
 │   └── package.json   # Frontend package configuration
 └── README.md       # Project documentation
 ```
