@@ -1,3 +1,8 @@
+/**
+ * This file defines a SignUp component for user registration.
+ * It includes a form with validation, dynamic security questions, and error handling.
+ * Material-UI components are used for styling and functionality.
+*/
 'use client';
 import { useRouter } from 'next/navigation';
 import * as React from 'react';
@@ -20,6 +25,7 @@ import CheckIcon from '@mui/icons-material/Check';
 import Alert from '@mui/material/Alert';
 import Snackbar from '@mui/material/Snackbar';
 
+// Styled Material-UI Card with custom properties
 const Card = styled(MuiCard)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -46,6 +52,7 @@ const Card = styled(MuiCard)(({ theme }) => ({
   }),
 }));
 
+// Container for the sign-up form with responsive layout and styles
 const SignUpContainer = styled(Stack)(({ theme }) => ({
   height: 'calc((1 - var(--template-frame-height, 0)) * 100dvh)',
   minHeight: '100%',
@@ -70,7 +77,12 @@ const SignUpContainer = styled(Stack)(({ theme }) => ({
   },
 }));
 
+/**
+ * SignUp Component
+ * Handles user registration including form validation, security questions, and API submission.
+*/
 export default function SignUp(props: { disableCustomTheme?: boolean }) {
+  // State management for form and error handling
   const [emailError, setEmailError] = React.useState(false);
   const [emailErrorMessage, setEmailErrorMessage] = React.useState('');
   const [passwordError, setPasswordError] = React.useState(false);
@@ -83,7 +95,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
   const [alertSeverity, setAlertSeverity] = React.useState<'success' | 'error' | 'warning'>('success');
   const [securityErrors, setSecurityErrors] = React.useState([false, false, false]);
   const [securityErrorMessages, setSecurityErrorMessages] = React.useState(['', '', '']);
-  const router = useRouter();
+  const router = useRouter(); // For navigation between pages
 
   // List of all security questions
   const securityQuestions = [
@@ -113,10 +125,12 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     );
   };
 
+  // Close alert notification
   const handleAlertClose = () => {
     setAlertOpen(false);
   };
 
+  // Update security answers dynamically
   const handleSecurityAnswerChange = (index: number, value: string) => {
     setSecurityAnswers((prev) => {
       const newAnswers = [...prev];
@@ -125,7 +139,12 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     });
   };
 
+  /**
+   * Validates user inputs including email, password, and security answers.
+   * Updates error states and returns true if all inputs are valid.
+  */
   const validateInputs = () => {
+    // Input elements for validation
     const email = document.getElementById('email') as HTMLInputElement;
     const password = document.getElementById('password') as HTMLInputElement;
     const name = document.getElementById('name') as HTMLInputElement;
@@ -194,6 +213,10 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     return isValid;
   };
 
+  /**
+   * Handles form submission.
+   * Validates inputs, sends data to the backend API, and displays success or error messages.
+  */
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault(); // Prevent default values from being sent
 
@@ -204,6 +227,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
     const data = new FormData(event.currentTarget);
 
+    // Prepare form data for API reques
     const formData = {
       name: data.get('name'),
       email: data.get('email'),
@@ -217,6 +241,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
     };
 
     try {
+      // Send form data to the backend API
       console.log('Form data before sending: ', formData);
       const response = await axios.post('http://localhost:4000/api/users/signup', formData, {
         headers: {
@@ -224,6 +249,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         },
       });
 
+      // On success, show success message and redirect to sign-in page
       console.log('Sign-up successful:', response.data);
       setAlertMessage('Sign-up successful.');
       setAlertSeverity('success');
@@ -233,6 +259,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
         router.push('/sign-in');
       }, 2000);
     } catch (error) {
+      // On error, show failure message
       console.error('Error submitting the form:', error);
       setAlertMessage('Sign-up failed. Please try again.');
       setAlertSeverity('error');
@@ -242,6 +269,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
 
   return (
     <>
+      {/* Theme and layout setup */}
       <AppTheme {...props}>
         <CssBaseline enableColorScheme />
         <ColorModeSelect sx={{ position: 'fixed', top: '1rem', right: '1rem' }} />
@@ -254,11 +282,13 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
             >
               Sign up
             </Typography>
+            {/* Form with input fields and submission handling */}
             <Box
               component="form"
               onSubmit={handleSubmit}
               sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
             >
+              {/* Name input */}
               <FormControl>
                 <FormLabel htmlFor="name">Full name</FormLabel>
                 <TextField
@@ -273,6 +303,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                   color={nameError ? 'error' : 'primary'}
                 />
               </FormControl>
+              {/* Email input */}
               <FormControl>
                 <FormLabel htmlFor="email">Email</FormLabel>
                 <TextField
@@ -288,6 +319,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                   color={passwordError ? 'error' : 'primary'}
                 />
               </FormControl>
+              {/* Password input */}
               <FormControl>
                 <FormLabel htmlFor="password">Password</FormLabel>
                 <TextField
@@ -304,7 +336,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
                   color={passwordError ? 'error' : 'primary'}
                 />
               </FormControl>
-              {/* Security questions */}
+              {/* Security questions and answers */}
               {[...Array(3)].map((_, i) => (
                 <FormControl key={i} fullWidth error={securityErrors[i]}>
                   <FormLabel htmlFor={`security-question-${i + 1}`}>
@@ -348,6 +380,7 @@ export default function SignUp(props: { disableCustomTheme?: boolean }) {
           </Card>
         </SignUpContainer>
       </AppTheme>
+      {/* Snackbar for notifications */}
       <Snackbar open={alertOpen} autoHideDuration={6000} onClose={handleAlertClose} anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}>
         <Alert onClose={handleAlertClose} severity={alertSeverity} sx={{ width: '100%' }}>
           {alertMessage}
